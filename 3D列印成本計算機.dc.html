@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #0a0b0d; font-family: "Noto Sans TC", sans-serif; }
+  a { color: #ffb020; }
+  a:hover { color: #ffc757; }
+  input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"] { -moz-appearance: textfield; }
+  ::-webkit-scrollbar { width: 0px; }
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0a0b0d; display: flex; justify-content: center; align-items: flex-start; padding: 0;">
+  <div style="width: 100%; max-width: 430px; background: #15171b; min-height: 100vh; box-shadow: 0 0 60px rgba(0,0,0,.6); position: relative;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 22px 4px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #e8eaee; font-weight: 600; letter-spacing: .04em;">
+      <span>9:41</span>
+      <span style="display: flex; gap: 6px; align-items: center; color: #8b93a1; font-size: 11px;">
+        <span>LTE</span>
+        <span style="display: inline-block; width: 22px; height: 11px; border: 1.5px solid #8b93a1; border-radius: 3px; position: relative;">
+          <span style="position: absolute; inset: 1.5px; width: 12px; background: #9ef01a; border-radius: 1px;"></span>
+        </span>
+      </span>
+    </div>
+
+    <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+      <div style="position: fixed; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: #15171b; z-index: 60; overflow-y: auto;">
+        <div style="position: sticky; top: 0; z-index: 5; background: #15171b; padding: 16px 20px 12px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #262b33;">
+          <div style="flex: 1;">
+            <div style="font-size: 11px; letter-spacing: .28em; color: #8b93a1; font-family: 'IBM Plex Mono', monospace;">ADMIN</div>
+            <div style="font-size: 19px; font-weight: 900; color: #e8eaee; margin-top: 2px;">線材後台</div>
+          </div>
+          <button onClick="{{ closeAdmin }}" style="background: #ffb020; border: none; border-bottom: 2px solid #c9860f; color: #1a1205; border-radius: 9px; padding: 9px 16px; font-size: 13px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">完成</button>
+        </div>
+
+        <div style="padding: 16px 16px 44px; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; background: #1f232a; border: 1px solid #2c313a; border-radius: 11px; padding: 3px;">
+            <button onClick="{{ goTabFil }}" style="{{ tabFilStyle }}">線材</button>
+            <button onClick="{{ goTabMachine }}" style="{{ tabMachineStyle }}">機器</button>
+            <button onClick="{{ goTabRate }}" style="{{ tabRateStyle }}">費率預設</button>
+          </div>
+
+          <sc-if value="{{ tabFil }}" hint-placeholder-val="{{ true }}">
+          <div style="background: #1f232a; border: 1px solid #2c313a; border-radius: 14px; padding: 14px 16px 16px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #ffb020;"></span>
+              <span style="font-size: 13px; font-weight: 700; color: #e8eaee;">線材類型</span>
+            </div>
+            <div style="font-size: 11px; color: #7d8492; margin: 5px 0 10px;">廠商給的材料類型,自己新增(PLA、PLA+、PETG、TPU、碳纖…)</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+              <sc-for list="{{ typeChips }}" as="t" hint-placeholder-count="5">
+                <div style="{{ t.style }}">
+                  <span>{{ t.name }}</span>
+                  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6d7482;">{{ t.modeLabel }}</span>
+                  <span onClick="{{ t.remove }}" style="color: #6d7482; font-size: 12px; line-height: 1; cursor: pointer;">✕</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: flex; gap: 7px; margin-top: 12px;">
+              <input value="{{ newType }}" onChange="{{ onNewType }}" placeholder="新類型名稱" style="flex: 1; min-width: 0; background: #15171b; border: 1px solid #2c313a; border-radius: 9px; padding: 9px 11px; color: #e8eaee; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; outline: none;" />
+              <button onClick="{{ toggleNewTypeMode }}" style="flex: none; background: #2c313a; border: 1px solid #3a414d; color: #cdd2da; border-radius: 9px; padding: 9px 12px; font-size: 12px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">{{ newTypeModeLabel }}</button>
+              <button onClick="{{ addType }}" style="flex: none; background: #2c313a; border: 1px solid #3a414d; border-bottom-width: 2px; color: #e8eaee; border-radius: 9px; padding: 9px 13px; font-size: 13px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">新增</button>
+            </div>
+          </div>
+
+          <div style="background: #1f232a; border: 1px solid #2c313a; border-radius: 14px; padding: 14px 16px 16px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #ffb020;"></span>
+              <span style="font-size: 13px; font-weight: 700; color: #e8eaee;">廠商名稱</span>
+            </div>
+            <div style="font-size: 11px; color: #7d8492; margin: 5px 0 10px;">你有進貨的品牌,新增後可在線材上選擇</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+              <sc-for list="{{ brandChips }}" as="b" hint-placeholder-count="5">
+                <div style="{{ b.style }}">
+                  <span>{{ b.name }}</span>
+                  <span onClick="{{ b.remove }}" style="color: #6d7482; font-size: 12px; line-height: 1; cursor: pointer;">✕</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: flex; gap: 7px; margin-top: 12px;">
+              <input value="{{ newBrand }}" onChange="{{ onNewBrand }}" placeholder="新廠商名稱" style="flex: 1; min-width: 0; background: #15171b; border: 1px solid #2c313a; border-radius: 9px; padding: 9px 11px; color: #e8eaee; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; outline: none;" />
+              <button onClick="{{ addBrand }}" style="flex: none; background: #2c313a; border: 1px solid #3a414d; border-bottom-width: 2px; color: #e8eaee; border-radius: 9px; padding: 9px 13px; font-size: 13px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">新增</button>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px; padding: 0 4px;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: #ffb020;"></span>
+            <span style="font-size: 13px; font-weight: 700; color: #e8eaee; flex: 1;">線材庫 · 顏色與單價</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #7d8492;">{{ filamentCount }}</span>
+          </div>
+
+          <sc-for list="{{ adminRows }}" as="r" hint-placeholder-count="4">
+            <div style="background: #1f232a; border: 1px solid #2c313a; border-radius: 14px; overflow: hidden;">
+              <button onClick="{{ r.toggle }}" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: transparent; border: none; cursor: pointer; text-align: left;">
+                <span style="{{ r.dotStyle }}"></span>
+                <span style="flex: 1; min-width: 0;">
+                  <span style="display: block; font-size: 13px; font-weight: 700; color: #e8eaee;">{{ r.title }}</span>
+                  <span style="display: block; font-size: 11px; color: #7d8492; margin-top: 1px;">{{ r.subtitle }}</span>
+                </span>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #9ef01a;">{{ r.unitPrice }}</span>
+                <span style="color: #8b93a1; font-size: 11px; font-family: 'IBM Plex Mono', monospace;">{{ r.caret }}</span>
+              </button>
+              <sc-if value="{{ r.open }}" hint-placeholder-val="{{ true }}">
+                <div style="padding: 0 14px 14px; display: flex; flex-direction: column; gap: 9px;">
+                  <div style="display: flex; gap: 8px;">
+                    <select value="{{ r.brand }}" onChange="{{ r.onBrand }}" style="flex: 1; min-width: 0; background: #15171b; border: 1px solid #2c313a; border-radius: 9px; padding: 9px 8px; color: #e8eaee; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; outline: none; cursor: pointer;">
+                      <sc-for list="{{ r.brandOptions }}" as="b" hint-placeholder-count="4">
+                        <option value="{{ b.name }}">{{ b.name }}</option>
+                      </sc-for>
+                    </select>
+                    <select value="{{ r.type }}" onChange="{{ r.onType }}" style="flex: none; width: 116px; background: #15171b; border: 1px solid #2c313a; border-radius: 9px; padding: 9px 8px; color: #e8eaee; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; outline: none;">
+                      <sc-for list="{{ r.typeOptions }}" as="o" hint-placeholder-count="4">
+                        <option value="{{ o.name }}">{{ o.name }}</option>
+                      </sc-for>
+                    </select>
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <input value="{{ r.color }}" onChange="{{ r.onColor }}" placeholder="顏色名稱" style="flex: 1; min-width: 0; background: #15171b; border: 1px solid #2c313a; border-radius: 9px; padding: 9px 11px; color: #e8eaee; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; outline: none;" />
+                    <input value="{{ r.hex }}" onChange="{{ r.onHex }}" placeholder="#RRGGBB" style="flex: none; width: 104px; background: #15171b; border: 1px solid #2c313a; border-radius: 9px; padding: 9px 11px; color: #e8eaee; font-size: 12.5px; font-family: 'IBM Plex Mono', monospace; outline: none;" />
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <sc-for list="{{ r.swatches }}" as="sw" hint-placeholder-count="10">
+                      <button onClick="{{ sw.pick }}" style="{{ sw.style }}"></button>
+                    </sc-for>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <sc-for list="{{ r.numbers }}" as="nf" hint-placeholder-count="4">
+                      <div style="min-width: 0;">
+                        <div style="font-size: 10.5px; color: #7d8492; margin-bottom: 4px;">{{ nf.label }}</div>
+                        <input type="number" value="{{ nf.value }}" onChange="{{ nf.onChange }}" style="width: 100%; box-sizing: border-box; background: #15171b; border: 1px solid #2c313a; border-radius: 9px; padding: 8px 9px; color: #9ef01a; font-size: 14px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; text-align: right; outline: none;" />
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="font-size: 10.5px; color: #7d8492; margin-top: 2px;">量販折扣 · 點選這次的採購量,右邊可改折扣 %</div>
+                  <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <sc-for list="{{ r.tiers }}" as="t" hint-placeholder-count="5">
+                      <div style="{{ t.rowStyle }}">
+                        <button onClick="{{ t.pick }}" style="{{ t.pickStyle }}">{{ t.qty }}</button>
+                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #7d8492;">{{ t.each }}</span>
+                        <input type="number" value="{{ t.off }}" onChange="{{ t.onOff }}" style="width: 52px; flex: none; background: #15171b; border: 1px solid #2c313a; border-radius: 7px; padding: 5px 7px; color: #9ef01a; font-size: 13px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; text-align: right; outline: none;" />
+                        <span style="flex: none; font-size: 11px; color: #7d8492; font-family: 'IBM Plex Mono', monospace;">%</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="{{ r.netLineStyle }}">{{ r.netLine }}</div>
+                  <div style="display: flex; gap: 8px; margin-top: 2px;">
+                    <button onClick="{{ r.applyNow }}" style="flex: 1; background: #2c313a; border: 1px solid #3a414d; border-bottom-width: 2px; color: #e8eaee; border-radius: 9px; padding: 9px; font-size: 12.5px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">套用到計算機</button>
+                    <button onClick="{{ r.remove }}" style="flex: none; background: transparent; border: 1px solid #3a414d; color: #a35b5b; border-radius: 9px; padding: 9px 14px; font-size: 12.5px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">刪除</button>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+
+          <button onClick="{{ addFilament }}" style="background: #2c313a; border: 1px dashed #3a414d; color: #e8eaee; border-radius: 12px; padding: 12px; font-size: 13px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">＋ 新增線材</button>
+          </sc-if>
+
+          <sc-if value="{{ tabMachine }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="font-size: 11.5px; color: #7d8492; padding: 0 4px;">每台印表機的購入價、攤提壽命、功率與耗材率,套用後會寫進計算機的折舊與電費。</div>
+            <sc-for list="{{ machineRows }}" as="m" hint-placeholder-count="2">
+              <div style="background: #1f232a; border: 1px solid #2c313a; border-radius: 14px; padding: 13px 14px 14px;">
+                <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 10px;">
+                  <span style="{{ m.badgeStyle }}">{{ m.badge }}</span>
+                  <select value="{{ m.name }}" onChange="{{ m.onName }}" style="flex: 1; min-width: 0; background: #15171b; border: 1px solid #2c313a; border-radius: 9px; padding: 8px 9px; color: #e8eaee; font-size: 13px; font-weight: 600; font-family: 'Noto Sans TC', sans-serif; outline: none; cursor: pointer;">
+                    <sc-for list="{{ m.nameOptions }}" as="o" hint-placeholder-count="5">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                  <select value="{{ m.mode }}" onChange="{{ m.onMode }}" style="flex: none; width: 96px; background: #15171b; border: 1px solid #2c313a; color: #cdd2da; border-radius: 9px; padding: 8px 7px; font-size: 12.5px; font-weight: 600; font-family: 'Noto Sans TC', sans-serif; outline: none; cursor: pointer;">
+                    <option value="fdm">FDM</option>
+                    <option value="resin">樹脂</option>
+                  </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <sc-for list="{{ m.numbers }}" as="nf" hint-placeholder-count="4">
+                    <div style="min-width: 0;">
+                      <div style="font-size: 10.5px; color: #7d8492; margin-bottom: 4px;">{{ nf.label }}</div>
+                      <input type="number" value="{{ nf.value }}" onChange="{{ nf.onChange }}" style="width: 100%; box-sizing: border-box; background: #15171b; border: 1px solid #2c313a; border-radius: 9px; padding: 8px 9px; color: #9ef01a; font-size: 14px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; text-align: right; outline: none;" />
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="{{ m.rateStyle }}">{{ m.rateLine }}</div>
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                  <button onClick="{{ m.apply }}" style="flex: 1; background: #2c313a; border: 1px solid #3a414d; border-bottom-width: 2px; color: #e8eaee; border-radius: 9px; padding: 9px; font-size: 12.5px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">套用到計算機</button>
+                  <button onClick="{{ m.remove }}" style="flex: none; background: transparent; border: 1px solid #3a414d; color: #a35b5b; border-radius: 9px; padding: 9px 14px; font-size: 12.5px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">刪除</button>
+                </div>
+              </div>
+            </sc-for>
+            <button onClick="{{ addMachine }}" style="background: #2c313a; border: 1px dashed #3a414d; color: #e8eaee; border-radius: 12px; padding: 12px; font-size: 13px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">＋ 新增機器</button>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ tabRate }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="font-size: 11.5px; color: #7d8492; padding: 0 4px;">這裡設定的是新案件的起始值。改完按「存為預設」,之後每次「全部歸零重算」都會回到這組數字。</div>
+            <sc-for list="{{ rateGroups }}" as="rg" hint-placeholder-count="3">
+              <div style="background: #1f232a; border: 1px solid #2c313a; border-radius: 14px; padding: 13px 16px 14px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <span style="width: 6px; height: 6px; border-radius: 50%; background: #ffb020;"></span>
+                  <span style="font-size: 13px; font-weight: 700; color: #e8eaee;">{{ rg.title }}</span>
+                </div>
+                <sc-for list="{{ rg.fields }}" as="f" hint-placeholder-count="3">
+                  <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid #262b33;">
+                    <div style="flex: 1; min-width: 0;">
+                      <div style="font-size: 13px; color: #cdd2da; font-weight: 500;">{{ f.label }}</div>
+                      <div style="font-size: 11px; color: #7d8492; margin-top: 1px;">{{ f.hint }}</div>
+                    </div>
+                    <input type="number" value="{{ f.value }}" onChange="{{ f.onChange }}" style="width: 82px; flex: none; background: #15171b; border: 1px solid #2c313a; border-radius: 8px; padding: 7px 8px; color: #9ef01a; font-size: 15px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; text-align: right; outline: none;" />
+                    <span style="width: 34px; flex: none; font-size: 11px; color: #7d8492; font-family: 'IBM Plex Mono', monospace;">{{ f.unit }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+            <div style="background: #1f232a; border: 1px solid #2c313a; border-radius: 14px; padding: 13px 16px 14px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #ffb020;"></span>
+                <span style="font-size: 13px; font-weight: 700; color: #e8eaee; flex: 1;">報價單文字</span>
+              </div>
+              <div style="font-size: 11px; color: #7d8492; margin: 5px 0 9px;">報價單末尾附註,可自訂交期、付款方式等</div>
+              <textarea value="{{ noteText }}" onChange="{{ onNote }}" rows="3" style="width: 100%; box-sizing: border-box; resize: vertical; background: #15171b; border: 1px solid #2c313a; border-radius: 9px; padding: 9px 11px; color: #e8eaee; font-size: 12.5px; line-height: 1.6; font-family: 'Noto Sans TC', sans-serif; outline: none;"></textarea>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button onClick="{{ saveDefaults }}" style="flex: 1; background: #ffb020; border: none; border-bottom: 2px solid #c9860f; color: #1a1205; border-radius: 12px; padding: 12px; font-size: 13px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">{{ saveDefaultsLabel }}</button>
+              <button onClick="{{ restoreFactory }}" style="flex: none; background: transparent; border: 1px solid #3a414d; color: #7d8492; border-radius: 12px; padding: 12px 16px; font-size: 12.5px; font-weight: 600; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">還原原廠</button>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="padding: 10px 20px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+      <div>
+        <div style="font-size: 11px; letter-spacing: .28em; color: #8b93a1; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase;">Print Cost</div>
+        <div style="font-size: 21px; font-weight: 900; color: #e8eaee; letter-spacing: -.01em; margin-top: 2px;">列印成本計算機</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="display: flex; background: #1f232a; border: 1px solid #2c313a; border-radius: 10px; padding: 3px; gap: 2px;">
+          <button onClick="{{ setFdm }}" style="{{ tabFdmStyle }}">FDM</button>
+          <button onClick="{{ setResin }}" style="{{ tabResinStyle }}">樹脂</button>
+        </div>
+        <button onClick="{{ openAdmin }}" style="width: 36px; height: 36px; flex: none; border-radius: 10px; background: #1f232a; border: 1px solid #2c313a; color: #8b93a1; font-size: 15px; line-height: 1; cursor: pointer;">⚙</button>
+      </div>
+    </div>
+
+    <div style="position: sticky; top: 0; z-index: 20; padding: 0 16px 12px; background: linear-gradient(#15171b 78%, rgba(21,23,27,0));">
+      <div style="background: #0f1512; border: 1px solid #24312a; border-radius: 14px; padding: 16px 18px 14px; box-shadow: inset 0 2px 14px rgba(0,0,0,.6);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .22em; color: #4e7a49;">UNIT PRICE / 單件報價</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #4e7a49;">{{ qtyLabel }}</span>
+        </div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 42px; color: #9ef01a; line-height: 1.1; margin-top: 2px; text-shadow: 0 0 18px rgba(158,240,26,.25);">{{ priceDisplay }}</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #24312a;">
+          <div>
+            <div style="font-size: 10px; color: #4e7a49; font-family: 'IBM Plex Mono', monospace; letter-spacing: .1em;">成本</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #cfe8b8; font-weight: 600;">{{ costDisplay }}</div>
+          </div>
+          <div>
+            <div style="font-size: 10px; color: #4e7a49; font-family: 'IBM Plex Mono', monospace; letter-spacing: .1em;">毛利</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #cfe8b8; font-weight: 600;">{{ profitDisplay }}</div>
+          </div>
+          <div>
+            <div style="font-size: 10px; color: #4e7a49; font-family: 'IBM Plex Mono', monospace; letter-spacing: .1em;">批次總計</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #ffb020; font-weight: 600;">{{ batchDisplay }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 0 16px 40px; display: flex; flex-direction: column; gap: 14px;">
+
+      <div style="background: #1f232a; border: 1px solid #2c313a; border-radius: 14px; overflow: hidden;">
+        <div style="padding: 13px 16px 10px; display: flex; align-items: center; gap: 8px;">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #ffb020;"></span>
+          <span style="font-size: 13px; font-weight: 700; color: #e8eaee; flex: 1;">選擇線材</span>
+          <button onClick="{{ openAdmin }}" style="background: transparent; border: 1px solid #3a414d; color: #cdd2da; border-radius: 8px; padding: 5px 10px; font-size: 11.5px; font-weight: 600; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">後台管理</button>
+        </div>
+        <sc-for list="{{ filamentGroups }}" as="grp" hint-placeholder-count="3">
+          <div style="padding: 0 16px 12px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .18em; color: #6d7482; margin-bottom: 7px;">{{ grp.name }}</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+              <sc-for list="{{ grp.items }}" as="p" hint-placeholder-count="3">
+                <button onClick="{{ p.apply }}" style="{{ p.style }}">
+                  <span style="{{ p.dotStyle }}"></span>
+                  <span>{{ p.color }}</span>
+                  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #7d8492;">{{ p.sub }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noFilament }}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 0 16px 14px; font-size: 12px; color: #7d8492;">目前這個工藝還沒有線材,到後台管理新增。</div>
+        </sc-if>
+      </div>
+
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="6">
+        <div style="background: #1f232a; border: 1px solid #2c313a; border-radius: 14px; overflow: hidden;">
+          <button onClick="{{ g.toggle }}" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: transparent; border: none; cursor: pointer; text-align: left;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: #ffb020; flex: none;"></span>
+            <span style="font-size: 13px; font-weight: 700; color: #e8eaee; flex: 1;">{{ g.title }}</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9ef01a; font-weight: 600;">{{ g.amount }}</span>
+            <span style="color: #8b93a1; font-size: 11px; font-family: 'IBM Plex Mono', monospace; width: 12px; text-align: right;">{{ g.caret }}</span>
+          </button>
+          <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+            <div style="padding: 0 16px 6px;">
+              <sc-for list="{{ g.fields }}" as="f" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid #262b33;">
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 13px; color: #cdd2da; font-weight: 500;">{{ f.label }}</div>
+                    <div style="font-size: 11px; color: #7d8492; margin-top: 1px;">{{ f.hint }}</div>
+                  </div>
+                  <button onClick="{{ f.dec }}" style="width: 30px; height: 30px; flex: none; border-radius: 8px; background: #2c313a; border: 1px solid #3a414d; border-bottom-width: 2px; color: #e8eaee; font-size: 16px; line-height: 1; cursor: pointer; font-family: 'IBM Plex Mono', monospace;">−</button>
+                  <input type="number" value="{{ f.value }}" onChange="{{ f.onChange }}" style="width: 78px; flex: none; background: #15171b; border: 1px solid #2c313a; border-radius: 8px; padding: 7px 8px; color: #9ef01a; font-size: 15px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; text-align: right; outline: none;" />
+                  <button onClick="{{ f.inc }}" style="width: 30px; height: 30px; flex: none; border-radius: 8px; background: #2c313a; border: 1px solid #3a414d; border-bottom-width: 2px; color: #e8eaee; font-size: 16px; line-height: 1; cursor: pointer; font-family: 'IBM Plex Mono', monospace;">+</button>
+                  <span style="width: 34px; flex: none; font-size: 11px; color: #7d8492; font-family: 'IBM Plex Mono', monospace;">{{ f.unit }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+
+      <div style="background: #1f232a; border: 1px solid #2c313a; border-radius: 14px; padding: 14px 16px 16px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #ffb020;"></span>
+          <span style="font-size: 13px; font-weight: 700; color: #e8eaee; flex: 1;">固定成本項目</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9ef01a; font-weight: 600;">{{ fixedTotal }}</span>
+        </div>
+        <div style="font-size: 11px; color: #7d8492; margin-bottom: 6px;">租金、保險、網路、軟體授權等每月或每筆的攤提</div>
+        <sc-for list="{{ fixedRows }}" as="f" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 7px; padding: 9px 0; border-top: 1px solid #262b33;">
+            <input value="{{ f.name }}" onChange="{{ f.onName }}" placeholder="項目名稱" style="flex: 1; min-width: 0; background: #15171b; border: 1px solid #2c313a; border-radius: 8px; padding: 7px 9px; color: #e8eaee; font-size: 12.5px; font-family: 'Noto Sans TC', sans-serif; outline: none;" />
+            <input type="number" value="{{ f.amount }}" onChange="{{ f.onAmount }}" style="width: 62px; flex: none; background: #15171b; border: 1px solid #2c313a; border-radius: 8px; padding: 7px 8px; color: #9ef01a; font-size: 14px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; text-align: right; outline: none;" />
+            <div style="display: flex; gap: 3px; flex: none;">
+              <button onClick="{{ f.setUnit }}" style="{{ f.unitStyle }}">每件</button>
+              <button onClick="{{ f.setOrder }}" style="{{ f.orderStyle }}">整筆</button>
+            </div>
+            <button onClick="{{ f.remove }}" style="flex: none; width: 26px; height: 26px; border-radius: 7px; background: transparent; border: 1px solid #2c313a; color: #6d7482; font-size: 12px; line-height: 1; cursor: pointer;">✕</button>
+          </div>
+        </sc-for>
+        <button onClick="{{ addFixed }}" style="width: 100%; margin-top: 10px; background: #2c313a; border: 1px solid #3a414d; border-bottom-width: 2px; color: #e8eaee; border-radius: 9px; padding: 9px; font-size: 12.5px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">＋ 新增固定成本</button>
+      </div>
+
+      <div style="background: #1f232a; border: 1px solid #2c313a; border-radius: 14px; padding: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #ffb020;"></span>
+          <span style="font-size: 13px; font-weight: 700; color: #e8eaee;">成本拆解</span>
+        </div>
+        <div style="display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: #15171b; gap: 1px;">
+          <sc-for list="{{ breakdown }}" as="b" hint-placeholder-count="5">
+            <div style="{{ b.barStyle }}"></div>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;">
+          <sc-for list="{{ breakdown }}" as="b" hint-placeholder-count="5">
+            <div style="display: flex; align-items: center; gap: 9px;">
+              <span style="{{ b.dotStyle }}"></span>
+              <span style="flex: 1; font-size: 12.5px; color: #cdd2da;">{{ b.label }}</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7d8492; width: 44px; text-align: right;">{{ b.pct }}</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #e8eaee; width: 66px; text-align: right;">{{ b.amount }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background: #1f232a; border: 1px solid #2c313a; border-radius: 14px; padding: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #ffb020;"></span>
+          <span style="font-size: 13px; font-weight: 700; color: #e8eaee; flex: 1;">折扣空間</span>
+          <span style="font-size: 11px; color: #7d8492; font-family: 'IBM Plex Mono', monospace;">{{ listLabel }}</span>
+        </div>
+        <div style="display: flex; align-items: flex-end; gap: 12px;">
+          <div style="{{ roomPctStyle }}">{{ roomPctLabel }}</div>
+          <div style="flex: 1; min-width: 0; padding-bottom: 4px;">
+            <div style="font-size: 12.5px; color: #cdd2da;">{{ roomLabel }}</div>
+            <div style="font-size: 11px; color: #7d8492; margin-top: 2px;">目前毛利 {{ listMarginLabel }} ／ 底價 {{ floorLabel }}</div>
+          </div>
+        </div>
+        <div style="height: 10px; border-radius: 5px; background: #15171b; margin-top: 12px; overflow: hidden;">
+          <div style="{{ roomBarStyle }}"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 12px;">
+          <sc-for list="{{ discountSteps }}" as="d" hint-placeholder-count="5">
+            <div style="{{ d.style }}">
+              <span style="flex: none; width: 58px; font-size: 12.5px; font-weight: 600; color: #cdd2da;">{{ d.label }}</span>
+              <span style="flex: 1; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #e8eaee;">{{ d.price }}</span>
+              <span style="{{ d.noteStyle }}">{{ d.note }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size: 11px; color: #7d8492; margin-top: 10px;">保本價 {{ breakevenLabel }}(零毛利,再低就虧)</div>
+      </div>
+
+      <div style="background: #0f1512; border: 1px solid #24312a; border-radius: 14px; padding: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <span style="font-size: 13px; font-weight: 700; color: #cfe8b8;">客戶報價單</span>
+          <button onClick="{{ copyQuote }}" style="background: #ffb020; border: none; border-bottom: 2px solid #c9860f; color: #1a1205; border-radius: 9px; padding: 8px 14px; font-size: 12.5px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">{{ copyLabel }}</button>
+        </div>
+        <pre style="margin: 0; white-space: pre-wrap; word-break: break-word; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; line-height: 1.75; color: #8fb08a;">{{ quoteText }}</pre>
+        <div style="display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #24312a;">
+          <input value="{{ customer }}" onChange="{{ onCustomer }}" placeholder="客戶名稱(選填)" style="flex: 1; min-width: 0; background: #15171b; border: 1px solid #24312a; border-radius: 9px; padding: 9px 11px; color: #cfe8b8; font-size: 12.5px; font-family: 'Noto Sans TC', sans-serif; outline: none;" />
+          <button onClick="{{ sendOrder }}" style="flex: none; background: #2c313a; border: 1px solid #3a414d; border-bottom-width: 2px; color: #e8eaee; border-radius: 9px; padding: 9px 13px; font-size: 12.5px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">{{ sendLabel }}</button>
+        </div>
+        <div style="font-size: 10.5px; color: #4e7a49; margin-top: 7px;">送出後進入 FilaCost「訂單/預購」,並自動扣除所選線材庫存</div>
+      </div>
+
+      <button onClick="{{ resetAll }}" style="background: transparent; border: 1px solid #2c313a; color: #7d8492; border-radius: 12px; padding: 12px; font-size: 13px; font-weight: 600; font-family: 'Noto Sans TC', sans-serif; cursor: pointer;">全部歸零重算</button>
+
+      <div style="text-align: center; font-size: 10.5px; color: #565c68; font-family: 'IBM Plex Mono', monospace; letter-spacing: .1em;">{{ footer }}</div>
+      <div style="text-align: center; font-size: 10.5px; color: #4e7a49; font-family: 'IBM Plex Mono', monospace; letter-spacing: .06em; padding-bottom: 8px;">{{ linkStatus }}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:932},&quot;currency&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;NT$&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showTax&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const TYPES = [
+  { id: "t1", name: "PLA", mode: "fdm" },
+  { id: "t2", name: "PLA+", mode: "fdm" },
+  { id: "t3", name: "PETG", mode: "fdm" },
+  { id: "t4", name: "ABS", mode: "fdm" },
+  { id: "t5", name: "TPU", mode: "fdm" },
+  { id: "t6", name: "標準樹脂", mode: "resin" },
+  { id: "t7", name: "水洗樹脂", mode: "resin" },
+];
+
+// 與 FilaCost 共用的種子資料(兩邊必須一致)
+const FILAMENTS = [
+  { id: "f1", brand: "eSUN", type: "PLA", color: "白", hex: "#f2f3f5", price: 600, weight: 1000, watt: 120, sku: "ES-PLA-WH", stockKg: 6.4, safeKg: 12, burnKg: 4.2 },
+  { id: "f2", brand: "eSUN", type: "PLA", color: "黑", hex: "#1b1d21", price: 600, weight: 1000, watt: 120, sku: "ES-PLA-BK", stockKg: 2.1, safeKg: 12, burnKg: 3.1 },
+  { id: "f3", brand: "Bambu", type: "PLA+", color: "灰", hex: "#8b8f96", price: 890, weight: 1000, watt: 120, sku: "BL-PLAP-GY", stockKg: 3.2, safeKg: 8, burnKg: 2.4 },
+  { id: "f4", brand: "Bambu", type: "PETG", color: "透明橘", hex: "#e8802a", price: 780, weight: 1000, watt: 130, sku: "BL-PETG-OR", stockKg: 0.8, safeKg: 8, burnKg: 1.2 },
+  { id: "f5", brand: "Polymaker", type: "TPU", color: "螢光綠", hex: "#9ef01a", price: 1100, weight: 750, watt: 120, sku: "PM-TPU-GN", stockKg: 1.5, safeKg: 3, burnKg: 0.6 },
+  { id: "f6", brand: "Anycubic", type: "標準樹脂", color: "灰", hex: "#7d8492", price: 1200, weight: 1000, watt: 60, sku: "AC-RES-GY", stockKg: 4, safeKg: 6, burnKg: 1.8 },
+  { id: "f7", brand: "Anycubic", type: "水洗樹脂", color: "膚色", hex: "#e4bb96", price: 1500, weight: 1000, watt: 60, sku: "AC-WRS-SK", stockKg: 2, safeKg: 4, burnKg: 0.9 },
+];
+
+const BRANDS = [
+  { id: "b1", name: "eSUN" }, { id: "b2", name: "Bambu" }, { id: "b3", name: "Polymaker" },
+  { id: "b4", name: "Anycubic" }, { id: "b5", name: "Elegoo" }, { id: "b6", name: "SUNLU" },
+  { id: "b7", name: "三緯 XYZ" }, { id: "b8", name: "其他廠商" },
+];
+
+const DEFAULT_TIERS = [
+  { qty: 1, off: 0 }, { qty: 3, off: 5 }, { qty: 5, off: 8 }, { qty: 10, off: 12 }, { qty: 20, off: 18 },
+];
+
+const SWATCHES = ["#f2f3f5", "#c9ccd1", "#8b8f96", "#1b1d21", "#c83232", "#e8802a", "#f5d547", "#9ef01a", "#2f9e6e", "#3a8fd6", "#5a4fd1", "#d45a9e", "#8a5a34", "#e4bb96"];
+
+const COLORS = ["#9ef01a", "#ffb020", "#48c9f0", "#e05a86", "#a98bf5", "#f5d547", "#5ad3a0", "#8b93a1"];
+
+const DEFAULTS = {
+  spoolPrice: 0, spoolWeight: 1000,
+  bottlePrice: 0, bottleML: 1000,
+  weight: 0, support: 0, volume: 0,
+  hours: 0, minutes: 0, watt: 0, kwhRate: 0,
+  wage: 0, prepMin: 0,
+  postMin: 0, postMat: 0,
+  machinePrice: 0, lifeHours: 0, consumHour: 0, consumUnit: 0,
+  failRate: 0, pack: 0, ship: 0, qty: 1, listPrice: 0, minMargin: 0,
+  dryWatt: 0, dryHours: 0, dryShare: 100,
+  boxWatt: 0, boxHours: 0, boxShare: 100,
+  washWatt: 0, washHours: 0, washShare: 100,
+  margin: 0, tax: 0,
+};
+
+const MODELS = [
+  { name: "Bambu P1S", mode: "fdm", price: 24000, life: 5000, watt: 120, consum: 6 },
+  { name: "Bambu A1", mode: "fdm", price: 14000, life: 4000, watt: 110, consum: 5 },
+  { name: "Bambu A1 mini", mode: "fdm", price: 8900, life: 4000, watt: 90, consum: 4 },
+  { name: "Bambu X1C", mode: "fdm", price: 42000, life: 6000, watt: 140, consum: 8 },
+  { name: "Prusa MK4", mode: "fdm", price: 32000, life: 8000, watt: 120, consum: 6 },
+  { name: "Ender 3 V3", mode: "fdm", price: 8500, life: 4000, watt: 130, consum: 4 },
+  { name: "Creality K1", mode: "fdm", price: 18000, life: 4500, watt: 150, consum: 6 },
+  { name: "Voron 2.4（自組）", mode: "fdm", price: 45000, life: 8000, watt: 160, consum: 9 },
+  { name: "其他 FDM", mode: "fdm", price: 15000, life: 4000, watt: 120, consum: 5 },
+  { name: "Elegoo Mars 4 Ultra", mode: "resin", price: 9800, life: 2000, watt: 60, consum: 12 },
+  { name: "Elegoo Saturn 4 Ultra", mode: "resin", price: 16000, life: 2500, watt: 80, consum: 16 },
+  { name: "Anycubic Photon M5s", mode: "resin", price: 12000, life: 2000, watt: 70, consum: 14 },
+  { name: "Phrozen Sonic Mini 8K", mode: "resin", price: 14000, life: 2000, watt: 65, consum: 13 },
+  { name: "其他樹脂機", mode: "resin", price: 12000, life: 2000, watt: 60, consum: 12 },
+];
+
+const MACHINES = [
+  { id: "m1", name: "Bambu P1S", label: "P1S #1", mode: "fdm", price: 24000, life: 5000, watt: 120, consum: 6, state: "列印中", pct: 72, job: "#A-2418 收納格 8/12" },
+  { id: "m2", name: "Ender 3 V3", label: "Ender 3 V3", mode: "fdm", price: 8500, life: 4000, watt: 130, consum: 4, state: "列印中", pct: 34, job: "#P-0093 齒輪組 10/30" },
+  { id: "m3", name: "Mars 4 Ultra", label: "Mars 4 Ultra", mode: "resin", price: 9800, life: 2000, watt: 60, consum: 12, state: "閒置", pct: 0, job: "可接單" },
+];
+
+const NOTE = "報價含材料、機時、電費、後處理與包裝;\n如需改色、加急或特殊後處理另行報價。";
+
+// ---------- 與 FilaCost 系統的共用資料層(兩個檔案內容相同) ----------
+const LINK = {
+  K: {
+    fil: "printcost_filaments_v2", types: "printcost_types_v2", brands: "printcost_brands_v1", mac: "printcost_machines_v1",
+    job: "filacost_link_job_v1", quote: "filacost_link_quote_v1", inbox: "filacost_link_inbox_v1",
+    orders: "filacost_orders_v1", customers: "filacost_customers_v1", catalog: "filacost_catalog_v1", rates: "filacost_rates_v1",
+  },
+  lastSync: 0,
+  read(key, fb) { try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : fb; } catch (e) { return fb; } },
+  write(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} },
+  listen(fn) {
+    const keys = Object.values(LINK.K);
+    const h = e => { if (keys.indexOf(e.key) >= 0) { LINK.lastSync = Date.now(); fn(e.key); } };
+    window.addEventListener("storage", h);
+    return () => window.removeEventListener("storage", h);
+  },
+  same(a, b) { return typeof a === "number" && typeof b === "number" ? Math.abs(a - b) < 1e-6 : a === b; },
+  publish(app, patch) {
+    const doc = LINK.read(LINK.K.job, null) || {};
+    LINK.write(LINK.K.job, { app, ts: Date.now(), job: Object.assign({}, doc.job || {}, patch) });
+    LINK.lastSync = Date.now();
+  },
+  // 只發布「本地有變動、且與共用文件不同」的欄位,避免兩邊互相回傳
+  diffPublish(app, prev, next) {
+    const cur = (LINK.read(LINK.K.job, null) || {}).job || {};
+    const patch = {};
+    Object.keys(next).forEach(k => { if (!LINK.same(prev[k], next[k]) && !LINK.same(cur[k], next[k])) patch[k] = next[k]; });
+    if (Object.keys(patch).length) LINK.publish(app, patch);
+  },
+  clock(ts) { if (!ts) return ""; const d = new Date(ts); return [d.getHours(), d.getMinutes(), d.getSeconds()].map(x => String(x).padStart(2, "0")).join(":"); },
+};
+
+const r2 = x => Math.round((Number(x) || 0) * 100) / 100;
+
+class Component extends DCLogic {
+  state = {
+    mode: "fdm",
+    adminTab: "fil",
+    machines: MACHINES,
+    activeMachine: "m1",
+    defaults: { ...DEFAULTS },
+    note: NOTE,
+    savedFlash: false,
+    open: { spec: false, mat: true, power: false, labor: false, post: false, dep: false, risk: false, quote: true },
+    screen: "calc",
+    newType: "",
+    newTypeMode: "fdm",
+    brands: BRANDS,
+    newBrand: "",
+    types: TYPES,
+    filaments: FILAMENTS,
+    activeId: "f1",
+    openRow: null,
+    _sellOpen: true,
+    fixed: [
+      { id: 1, name: "工作室租金分攤", amount: 0, per: "unit" },
+      { id: 2, name: "軟體/授權", amount: 0, per: "unit" },
+    ],
+    copied: false,
+    customer: "",
+    sent: null,
+    v: { ...DEFAULTS },
+  };
+
+  componentDidMount() {
+    try {
+      const fl = localStorage.getItem("printcost_filaments_v2");
+      if (fl) this.setState({ filaments: JSON.parse(fl) });
+      const br = localStorage.getItem("printcost_brands_v1");
+      if (br) this.setState({ brands: JSON.parse(br) });
+      const ty = localStorage.getItem("printcost_types_v2");
+      if (ty) this.setState({ types: JSON.parse(ty) });
+      const fx = localStorage.getItem("printcost_fixed_v1");
+      if (fx) this.setState({ fixed: JSON.parse(fx) });
+      const mc = localStorage.getItem("printcost_machines_v1");
+      if (mc) this.setState({ machines: JSON.parse(mc) });
+      const df = localStorage.getItem("printcost_defaults_v1");
+      if (df) { const d = { ...DEFAULTS, ...JSON.parse(df) }; this.setState({ defaults: d, v: d }); }
+      const nt = localStorage.getItem("printcost_note_v1");
+      if (nt) this.setState({ note: JSON.parse(nt) });
+    } catch (e) {}
+
+    this.applyJob(LINK.read(LINK.K.job, null));
+    this._unlisten = LINK.listen(key => {
+      const pick = { [LINK.K.fil]: "filaments", [LINK.K.types]: "types", [LINK.K.brands]: "brands", [LINK.K.mac]: "machines" }[key];
+      if (pick) { const val = LINK.read(key, null); if (Array.isArray(val)) this.setState({ [pick]: val }); }
+      else if (key === LINK.K.job) this.applyJob(LINK.read(key, null));
+    });
+    setTimeout(() => this.syncOut(), 0);
+  }
+
+  componentDidUpdate() { this.syncOut(); }
+  componentWillUnmount() { if (this._unlisten) this._unlisten(); }
+
+  persist(key, val) { LINK.write(key, val); }
+
+  // 本案件參數 → 共用欄位
+  linkJob() {
+    const v = k => this.n(k);
+    const resin = this.state.mode === "resin";
+    const w = resin ? v("volume") : v("weight");
+    return {
+      filamentPerKg: r2(resin ? this.pricePerL() : this.pricePerKg()),
+      weight: w, wastePct: !resin && w > 0 ? r2(v("support") / w * 100) : 0,
+      hours: r2(v("hours") + v("minutes") / 60), watt: v("watt"), kwhRate: v("kwhRate"),
+      machinePrice: v("machinePrice"), machineLife: v("lifeHours"), maintPerHour: v("consumHour"),
+      postMat: v("postMat"), postMin: v("postMin"), prepMin: v("prepMin"), wage: v("wage"),
+      pack: v("pack"), ship: v("ship"), failRate: v("failRate"), margin: v("margin"),
+      qty: Math.max(1, Math.round(v("qty"))),
+      filamentId: this.state.activeId, machineId: this.state.activeMachine,
+    };
+  }
+
+  // 共用欄位 → 本案件參數(套用整份文件,讓重量與損耗等成對欄位保持一致)
+  applyJob(doc) {
+    if (!doc || !doc.job) return;
+    const j = doc.job;
+    const has = k => j[k] !== undefined && j[k] !== null && j[k] !== "";
+    const num = k => Number(j[k]) || 0;
+    this._suppress = true;
+    this.setState(st => {
+      const resin = st.mode === "resin";
+      const v = { ...st.v };
+      if (has("weight")) v[resin ? "volume" : "weight"] = num("weight");
+      if (!resin && has("wastePct")) v.support = Math.round((Number(v.weight) || 0) * num("wastePct") / 10) / 10;
+      if (has("filamentPerKg")) {
+        const sizeKey = resin ? "bottleML" : "spoolWeight";
+        if (!(Number(v[sizeKey]) > 0)) v[sizeKey] = 1000;
+        v[resin ? "bottlePrice" : "spoolPrice"] = r2(num("filamentPerKg") * Number(v[sizeKey]) / 1000);
+      }
+      if (has("hours")) {
+        let h = Math.floor(num("hours")), m = Math.round((num("hours") - h) * 60);
+        if (m >= 60) { h += 1; m = 0; }
+        v.hours = h; v.minutes = m;
+      }
+      const MAP = { watt: "watt", kwhRate: "kwhRate", machinePrice: "machinePrice", machineLife: "lifeHours", maintPerHour: "consumHour",
+        postMat: "postMat", postMin: "postMin", prepMin: "prepMin", wage: "wage", pack: "pack", ship: "ship",
+        failRate: "failRate", margin: "margin", qty: "qty" };
+      Object.keys(MAP).forEach(k => { if (has(k)) v[MAP[k]] = num(k); });
+      const patch = { v, copied: false };
+      if (j.filamentId && st.filaments.some(f => f.id === j.filamentId)) patch.activeId = j.filamentId;
+      if (j.machineId && st.machines.some(m => m.id === j.machineId)) patch.activeMachine = j.machineId;
+      return patch;
+    });
+  }
+
+  linkQuote() {
+    const c = this.calc(), s = this.state;
+    const af = s.filaments.find(f => f.id === s.activeId);
+    const am = s.machines.find(m => m.id === s.activeMachine);
+    const useKg = c.resin ? this.n("volume") * c.qty / 1000 : (this.n("weight") + this.n("support")) * c.qty / 1000;
+    return {
+      mode: s.mode, qty: c.qty, unitCost: r2(c.unitCost), price: r2(c.price), profit: r2(c.profit), batch: r2(c.batch),
+      marginPct: c.net > 0 ? r2(c.profit / c.net * 100) : 0,
+      material: af ? [af.brand, af.type, af.color].filter(Boolean).join(" ") : "",
+      machine: am ? (am.label || am.name) : "",
+      filamentId: af ? af.id : "", useKg: Math.round(useKg * 1000) / 1000,
+    };
+  }
+
+  syncOut() {
+    const job = this.linkJob();
+    if (this._suppress || !this._lastJob) this._suppress = false;
+    else LINK.diffPublish("calc", this._lastJob, job);
+    this._lastJob = job;
+    const q = this.linkQuote(), qs = JSON.stringify(q);
+    if (qs !== this._lastQuote) { this._lastQuote = qs; LINK.write(LINK.K.quote, { ...q, ts: Date.now() }); }
+  }
+
+  setFixed(next) { this.setState({ fixed: next, copied: false }); this.persist("printcost_fixed_v1", next); }
+
+  pricePerKg() { const w = this.n("spoolWeight"); return w > 0 ? (this.n("spoolPrice") / w) * 1000 : 0; }
+  pricePerL() { const ml = this.n("bottleML"); return ml > 0 ? (this.n("bottlePrice") / ml) * 1000 : 0; }
+
+  n(k) { const x = Number(this.state.v[k]); return isFinite(x) ? x : 0; }
+  set(k, val) { this.setState(s => ({ v: { ...s.v, [k]: val }, copied: false })); }
+  bump(k, step, min) {
+    const next = Math.round((this.n(k) + step) * 100) / 100;
+    this.set(k, next < (min ?? 0) ? (min ?? 0) : next);
+  }
+
+  money(x) {
+    const cur = this.props.currency ?? "NT$";
+    return cur + Math.round(x).toLocaleString("zh-TW");
+  }
+
+  calc() {
+    const v = k => this.n(k);
+    const resin = this.state.mode === "resin";
+    const material = resin
+      ? (v("volume") / 1000) * this.pricePerL()
+      : ((v("weight") + v("support")) / 1000) * this.pricePerKg();
+    const timeH = v("hours") + v("minutes") / 60;
+    const rate = v("kwhRate");
+    const dev = (w, h, share) => (v(w) / 1000) * v(h) * rate * (Math.min(Math.max(v(share), 0), 100) / 100);
+    const powerPrinter = (v("watt") / 1000) * timeH * rate;
+    const powerDryer = dev("dryWatt", "dryHours", "dryShare");
+    const powerBox = dev("boxWatt", "boxHours", "boxShare");
+    const powerWash = dev("washWatt", "washHours", "washShare");
+    const power = powerPrinter + powerDryer + powerBox + powerWash;
+    const labor = (v("prepMin") / 60) * v("wage");
+    const post = (v("postMin") / 60) * v("wage") + v("postMat");
+    const dep = v("lifeHours") > 0 ? (v("machinePrice") / v("lifeHours")) * timeH : 0;
+    const consum = v("consumHour") * timeH + v("consumUnit");
+    const base = material + power + labor + post + dep + consum;
+    const fr = Math.min(Math.max(v("failRate"), 0), 90) / 100;
+    const fail = base / (1 - fr) - base;
+    const qty = Math.max(1, Math.round(v("qty")));
+    const pack = v("pack") + v("ship") / qty;
+    const fixed = this.state.fixed.reduce((a, f) => {
+      const amt = Number(f.amount) || 0;
+      return a + (f.per === "order" ? amt / qty : amt);
+    }, 0);
+    const unitCost = base + fail + pack + fixed;
+    const m = Math.min(Math.max(v("margin"), 0), 95) / 100;
+    const net = unitCost / (1 - m);
+    const taxRate = v("tax") / 100;
+    const price = net * (1 + ((this.props.showTax ?? true) ? taxRate : 0));
+    const listRaw = v("listPrice");
+    const list = listRaw > 0 ? listRaw : price;
+    const minM = Math.min(Math.max(v("minMargin"), 0), 95) / 100;
+    const taxMul = 1 + ((this.props.showTax ?? true) ? taxRate : 0);
+    const floor = (unitCost / (1 - minM)) * taxMul;
+    const room = list - floor;
+    const listNet = list / taxMul;
+    return { resin, material, power, labor, post, dep, consum, fail, pack, fixed, base, unitCost, price, net, qty, timeH,
+      powerPrinter, powerDryer, powerBox, powerWash,
+      list, floor, room, taxMul,
+      roomPct: list > 0 ? (room / list) * 100 : 0,
+      listMarginPct: listNet > 0 ? ((listNet - unitCost) / listNet) * 100 : 0,
+      breakeven: unitCost * taxMul,
+      profit: net - unitCost, batch: price * qty };
+  }
+
+  field(k, label, unit, step, hint) {
+    return { key: k, label, unit, hint: hint ?? "", value: this.state.v[k],
+      onChange: e => this.set(k, e.target.value === "" ? "" : Number(e.target.value)),
+      inc: () => this.bump(k, step), dec: () => this.bump(k, -step) };
+  }
+
+  quote(c) {
+    const L = [];
+    L.push("【3D 列印報價單】");
+    L.push("工藝:" + (c.resin ? "光固化樹脂 (SLA/DLP)" : "FDM 線材"));
+    const af = this.state.filaments.find(f => f.id === this.state.activeId);
+    if (af) L.push("材料:" + [af.brand, af.type, af.color].filter(Boolean).join(" ") );
+    L.push("列印時間:" + Math.floor(c.timeH) + " 小時 " + Math.round((c.timeH % 1) * 60) + " 分");
+    L.push("數量:" + c.qty + " 件");
+    L.push("—");
+    L.push("單件成本:" + this.money(c.unitCost));
+    L.push("單件報價:" + this.money(c.price));
+    L.push("合計:" + this.money(c.batch) + (((this.props.showTax ?? true) && this.n("tax") > 0) ? "(已含稅)" : ""));
+    L.push("—");
+    if ((this.state.note || "").trim()) L.push(this.state.note.trim());
+    return L.join("\n");
+  }
+
+  renderVals() {
+    const c = this.calc();
+    const s = this.state;
+    const tab = on => "border: none; border-radius: 8px; padding: 7px 15px; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; background: " +
+      (on ? "#ffb020" : "transparent") + "; color: " + (on ? "#1a1205" : "#8b93a1") + ";";
+
+    const toggle = k => () => this.setState(st => ({ open: { ...st.open, [k]: !st.open[k] } }));
+
+    const matFields = c.resin
+      ? [this.field("volume", "樹脂用量", "ml", 5, "切片軟體估算含支撐")]
+      : [this.field("weight", "模型重量", "g", 5, "切片軟體估算"), this.field("support", "支撐/廢料", "g", 1, "裙邊、支撐、清料")];
+
+    const specFields = c.resin
+      ? [this.field("bottlePrice", "整瓶售價", "", 50, "一瓶樹脂的購入價"), this.field("bottleML", "整瓶容量", "ml", 100, "常見 500 / 1000 ml")]
+      : [this.field("spoolPrice", "整卷售價", "", 50, "一卷線材的購入價"),
+         this.field("spoolWeight", "整卷淨重", "g", 100, "常見 750 / 1000 g")];
+
+    const unitPriceText = c.resin
+      ? this.money(this.pricePerL()) + " /L"
+      : this.money(this.pricePerKg()) + " /kg";
+
+    const groups = [
+      { key: "spec", title: c.resin ? "樹脂規格設定" : "線材規格設定", amount: unitPriceText, fields: specFields },
+      { key: "mat", title: c.resin ? "樹脂用量" : "線材用量", amount: this.money(c.material), fields: matFields },
+      { key: "power", title: "時間與電費", amount: this.money(c.power), fields: [
+        this.field("hours", "列印時數", "hr", 1), this.field("minutes", "分鐘", "min", 5),
+        this.field("kwhRate", "電價", "/度", 0.1, "台電住宅約 4.1"),
+        this.field("watt", "列印機功率", "W", 10, "電費 " + this.money(c.powerPrinter)),
+        this.field("dryWatt", "烘乾機功率", "W", 10, "電費 " + this.money(c.powerDryer)),
+        this.field("dryHours", "烘乾時數", "hr", 1, "分攤 " + this.n("dryShare") + "%"),
+        this.field("dryShare", "烘乾分攤", "%", 10, "這一單要吃多少比例"),
+        this.field("boxWatt", "防潮箱功率", "W", 2, "電費 " + this.money(c.powerBox)),
+        this.field("boxHours", "防潮箱時數", "hr", 1, "通常整天"),
+        this.field("boxShare", "防潮箱分攤", "%", 5, "多卷共用,比例要調低"),
+        this.field("washWatt", "清洗固化機功率", "W", 10, "電費 " + this.money(c.powerWash)),
+        this.field("washHours", "清洗固化時數", "hr", 0.5, ""),
+        this.field("washShare", "清洗分攤", "%", 10, "")] },
+      { key: "labor", title: "人工與機時", amount: this.money(c.labor), fields: [
+        this.field("wage", "人工時薪", "/hr", 20), this.field("prepMin", "備料取件", "min", 5, "上料、清床、取件")] },
+      { key: "post", title: "後加工", amount: this.money(c.post), fields: [
+        this.field("postMin", "加工工時", "min", 5, "打磨、支撐移除、上色"), this.field("postMat", "加工材料", "", 5, "砂紙、補土、塗料")] },
+      { key: "dep", title: "折舊與耗材", amount: this.money(c.dep + c.consum), fields: [
+        this.field("machinePrice", "機器售價", "", 1000), this.field("lifeHours", "預估壽命", "hr", 500, "攤提總時數"),
+        this.field("consumHour", "每小時耗材", "/hr", 1, "噴嘴、離型膜、PEI"), this.field("consumUnit", "每件耗材", "/件", 1, "手套、酒精、膠水")] },
+      { key: "risk", title: "失敗率與運送", amount: this.money(c.fail + c.pack), fields: [
+        this.field("failRate", "失敗報廢率", "%", 1, "列印失敗攤提"), this.field("pack", "包裝材", "/件", 5),
+        this.field("ship", "運費", "", 10, "整筆,依數量分攤")] },
+      { key: "sell", title: "售價與折扣空間", amount: this.money(c.room), fields: [
+        this.field("listPrice", "商品標價", "", 10, "0 = 直接用建議售價"),
+        this.field("minMargin", "最低可接受毛利", "%", 1, "守住的底線")] },
+      { key: "quote", title: "報價設定", amount: this.money(c.profit), fields: [
+        this.field("qty", "數量", "件", 1), this.field("margin", "利潤率", "%", 5, "售價中的毛利占比"),
+        this.field("tax", "稅金", "%", 1, "營業稅")] },
+    ].map(g => ({ ...g, open: !!s.open[g.key], caret: s.open[g.key] ? "▲" : "▼", toggle: toggle(g.key) }));
+
+    const rows = [
+      ["材料", c.material], ["列印機電費", c.powerPrinter],
+      ["烘乾/防潮/清洗電費", c.powerDryer + c.powerBox + c.powerWash], ["人工", c.labor], ["後加工", c.post],
+      ["折舊", c.dep], ["耗材", c.consum], ["失敗攤提", c.fail], ["包裝運費", c.pack], ["固定成本", c.fixed],
+    ].filter(r => r[1] > 0.5);
+    const total = rows.reduce((a, r) => a + r[1], 0) || 1;
+    const breakdown = rows.map((r, i) => ({
+      label: r[0], amount: this.money(r[1]), pct: Math.round((r[1] / total) * 100) + "%",
+      barStyle: "flex: " + (r[1] / total) + " 0 0; background: " + COLORS[i % COLORS.length] + ";",
+      dotStyle: "width: 9px; height: 9px; border-radius: 3px; flex: none; background: " + COLORS[i % COLORS.length] + ";",
+    }));
+
+    const typeMode = name => (s.types.find(t => t.name === name) || {}).mode || "fdm";
+    const tiersOf = f => (f.tiers && f.tiers.length ? f.tiers : DEFAULT_TIERS);
+    const tierOff = f => {
+      const q = Number(f.buyQty) || 1;
+      const t = tiersOf(f).find(x => Number(x.qty) === q);
+      return Math.min(Math.max(Number(t ? t.off : f.discount) || 0, 0), 100);
+    };
+    const netPrice = f => (Number(f.price) || 0) * (1 - tierOff(f) / 100);
+    const perUnit = f => {
+      const w = Number(f.weight) || 0;
+      return w > 0 ? netPrice(f) / w * 1000 : 0;
+    };
+    const applyFilament = f => () => {
+      const md = typeMode(f.type);
+      this.setState(st => ({
+        mode: md, activeId: f.id, screen: "calc", copied: false,
+        v: { ...st.v, watt: Number(f.watt) || st.v.watt,
+          ...(md === "resin"
+            ? { bottlePrice: Math.round(netPrice(f) * 100) / 100, bottleML: Number(f.weight) || 1000 }
+            : { spoolPrice: Math.round(netPrice(f) * 100) / 100, spoolWeight: Number(f.weight) || 1000 }) },
+      }));
+    };
+
+    const visible = s.filaments.filter(f => typeMode(f.type) === s.mode);
+    // FilaCost 新增的材料類型可能還不在類型清單,一併列出
+    const typeNames = s.types.filter(t => t.mode === s.mode).map(t => t.name);
+    visible.forEach(f => { if (!s.types.some(t => t.name === f.type) && typeNames.indexOf(f.type) < 0) typeNames.push(f.type); });
+    const filamentGroups = typeNames.map(name => ({
+      name,
+      items: visible.filter(f => f.type === name).map(f => {
+        const on = f.id === s.activeId;
+        return {
+          color: f.color, sub: f.brand,
+          dotStyle: "width: 12px; height: 12px; border-radius: 4px; flex: none; background: " + (f.hex || "#8b8f96") + "; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);",
+          style: "display: flex; align-items: center; gap: 7px; background: " + (on ? "#2c313a" : "#20242b") + "; border: 1px solid " + (on ? "#ffb020" : "#262b33") +
+            "; color: " + (on ? "#e8eaee" : "#9aa1ad") + "; border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans TC', sans-serif;",
+          apply: applyFilament(f),
+        };
+      }),
+    })).filter(g => g.items.length > 0);
+
+    const upd = (id, patch) => {
+      const next = s.filaments.map(x => x.id === id ? { ...x, ...patch } : x);
+      this.setState({ filaments: next, copied: false });
+      this.persist("printcost_filaments_v2", next);
+    };
+    const saveTypes = next => { this.setState({ types: next }); this.persist("printcost_types_v2", next); };
+
+    const adminRows = s.filaments.map(f => ({
+      title: (f.brand || "未命名") + " · " + f.color,
+      subtitle: f.type + " · " + (typeMode(f.type) === "resin" ? "樹脂" : "FDM") +
+        (f.stockKg !== undefined ? " · 庫存 " + (Number(f.stockKg) || 0).toFixed(1) + (typeMode(f.type) === "resin" ? " L" : " kg") : ""),
+      unitPrice: this.money(perUnit(f)) + (typeMode(f.type) === "resin" ? "/L" : "/kg"),
+      dotStyle: "width: 26px; height: 26px; border-radius: 8px; flex: none; background: " + (f.hex || "#8b8f96") + "; box-shadow: inset 0 0 0 1px rgba(255,255,255,.2);",
+      open: s.openRow === f.id, caret: s.openRow === f.id ? "▲" : "▼",
+      toggle: () => this.setState({ openRow: s.openRow === f.id ? null : f.id }),
+      brand: f.brand, type: f.type, color: f.color, hex: f.hex,
+      typeOptions: s.types,
+      brandOptions: s.brands.some(b => b.name === f.brand) ? s.brands : [{ id: "cur", name: f.brand || "（未指定）" }, ...s.brands],
+      onBrand: e => upd(f.id, { brand: e.target.value, label: "" }),
+      onType: e => upd(f.id, { type: e.target.value }),
+      onColor: e => upd(f.id, { color: e.target.value, label: "" }),
+      onHex: e => upd(f.id, { hex: e.target.value }),
+      swatches: SWATCHES.map(h => ({
+        pick: () => upd(f.id, { hex: h }),
+        style: "width: 26px; height: 26px; border-radius: 8px; cursor: pointer; background: " + h +
+          "; border: 2px solid " + (f.hex === h ? "#ffb020" : "transparent") + "; box-shadow: inset 0 0 0 1px rgba(255,255,255,.16);",
+      })),
+      numbers: [
+        { label: typeMode(f.type) === "resin" ? "整瓶定價" : "整卷定價", value: f.price, onChange: e => upd(f.id, { price: e.target.value === "" ? "" : Number(e.target.value) }) },
+        { label: typeMode(f.type) === "resin" ? "容量 ml" : "淨重 g", value: f.weight, onChange: e => upd(f.id, { weight: e.target.value === "" ? "" : Number(e.target.value) }) },
+        { label: "功率 W", value: f.watt, onChange: e => upd(f.id, { watt: e.target.value === "" ? "" : Number(e.target.value) }) },
+      ],
+      unitWord: typeMode(f.type) === "resin" ? "瓶" : "卷",
+      tiers: tiersOf(f).map((t, i) => {
+        const on = (Number(f.buyQty) || 1) === Number(t.qty);
+        return {
+          qty: t.qty + (typeMode(f.type) === "resin" ? " 瓶" : " 卷"),
+          off: t.off,
+          rowStyle: "display: flex; align-items: center; gap: 8px; padding: 6px 9px; border-radius: 9px; background: " +
+            (on ? "#24312a" : "#191d23") + "; border: 1px solid " + (on ? "#3d5c3a" : "#262b33") + ";",
+          pick: () => upd(f.id, { buyQty: Number(t.qty) }),
+          pickStyle: "flex: 1; min-width: 0; text-align: left; background: transparent; border: none; cursor: pointer; padding: 0; font-size: 12.5px; font-weight: 600; font-family: 'Noto Sans TC', sans-serif; color: " + (on ? "#cfe8b8" : "#9aa1ad") + ";",
+          each: this.money((Number(f.price) || 0) * (1 - Math.min(Math.max(Number(t.off) || 0, 0), 100) / 100)),
+          onOff: e => {
+            const off = e.target.value === "" ? "" : Number(e.target.value);
+            upd(f.id, { tiers: tiersOf(f).map((x, j) => j === i ? { ...x, off } : x) });
+          },
+        };
+      }),
+      netLine: tierOff(f) > 0
+        ? "採購 " + (Number(f.buyQty) || 1) + (typeMode(f.type) === "resin" ? " 瓶" : " 卷") + ":定價 " + this.money(Number(f.price) || 0) + " → 折後 " + this.money(netPrice(f)) + "(" + tierOff(f) + "% off)"
+        : "單" + (typeMode(f.type) === "resin" ? "瓶" : "卷") + "購入,無折扣 " + this.money(Number(f.price) || 0),
+      netLineStyle: "font-size: 11.5px; font-family: 'IBM Plex Mono', monospace; color: " + (tierOff(f) > 0 ? "#9ef01a" : "#7d8492") + "; background: #191d23; border: 1px solid #262b33; border-radius: 9px; padding: 8px 10px;",
+      applyNow: applyFilament(f),
+      remove: () => {
+        const next = s.filaments.filter(x => x.id !== f.id);
+        this.setState({ filaments: next, openRow: null });
+        this.persist("printcost_filaments_v2", next);
+      },
+    }));
+
+    const atab = on => "border: none; border-radius: 8px; padding: 8px 0; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; background: " +
+      (on ? "#2c313a" : "transparent") + "; color: " + (on ? "#e8eaee" : "#7d8492") + ";";
+
+    const updM = (id, patch) => {
+      const next = s.machines.map(x => x.id === id ? { ...x, ...patch } : x);
+      this.setState({ machines: next });
+      this.persist("printcost_machines_v1", next);
+    };
+    const num = (o, id, key, label) => ({ label, value: o[key],
+      onChange: e => updM(id, { [key]: e.target.value === "" ? "" : Number(e.target.value) }) });
+
+    const machineRows = s.machines.map(m => {
+      const on = m.id === s.activeMachine;
+      const hourly = (Number(m.life) || 0) > 0 ? (Number(m.price) || 0) / Number(m.life) : 0;
+      return {
+        name: m.name, modeLabel: m.mode === "resin" ? "樹脂" : "FDM",
+        badge: on ? "使用中" : "待命",
+        badgeStyle: "flex: none; font-size: 10px; font-family: 'IBM Plex Mono', monospace; letter-spacing: .08em; padding: 4px 8px; border-radius: 7px; background: " +
+          (on ? "#24312a" : "#191d23") + "; color: " + (on ? "#9ef01a" : "#6d7482") + ";",
+        nameOptions: (() => {
+          const pool = MODELS.filter(x => x.mode === m.mode);
+          const list = pool.map(x => ({ value: x.name, label: x.name }));
+          if (!pool.some(x => x.name === m.name)) list.unshift({ value: m.name, label: m.name });
+          return list;
+        })(),
+        onName: e => {
+          const hit = MODELS.find(x => x.name === e.target.value);
+          updM(m.id, hit ? { name: hit.name, price: hit.price, life: hit.life, watt: hit.watt, consum: hit.consum } : { name: e.target.value });
+        },
+        mode: m.mode,
+        onMode: e => {
+          const md = e.target.value;
+          const first = MODELS.find(x => x.mode === md);
+          updM(m.id, MODELS.some(x => x.name === m.name) && first
+            ? { mode: md, name: first.name, price: first.price, life: first.life, watt: first.watt, consum: first.consum }
+            : { mode: md });
+        },
+        numbers: [
+          num(m, m.id, "price", "購入價"), num(m, m.id, "life", "壽命 hr"),
+          num(m, m.id, "watt", "功率 W"), num(m, m.id, "consum", "耗材 /hr"),
+        ],
+        rateLine: "折舊 " + this.money(hourly) + "/hr ＋ 耗材 " + this.money(Number(m.consum) || 0) + "/hr",
+        rateStyle: "margin-top: 10px; font-size: 11.5px; font-family: 'IBM Plex Mono', monospace; color: #9ef01a; background: #191d23; border: 1px solid #262b33; border-radius: 9px; padding: 8px 10px;",
+        apply: () => this.setState(st => ({
+          mode: m.mode, activeMachine: m.id, screen: "calc", copied: false,
+          v: { ...st.v, machinePrice: Number(m.price) || 0, lifeHours: Number(m.life) || 0,
+               watt: Number(m.watt) || st.v.watt, consumHour: Number(m.consum) || 0 },
+        })),
+        remove: () => {
+          const next = s.machines.filter(x => x.id !== m.id);
+          this.setState({ machines: next });
+          this.persist("printcost_machines_v1", next);
+        },
+      };
+    });
+
+    const rateGroups = [
+      { title: "電費與工資", fields: [
+        this.field("kwhRate", "電價", "/度", 0.1, "台電住宅約 4.1"),
+        this.field("dryWatt", "烘乾機功率", "W", 10, "預設值"),
+        this.field("boxWatt", "防潮箱功率", "W", 2, "預設值"),
+        this.field("washWatt", "清洗固化機功率", "W", 10, "預設值"),
+        this.field("wage", "人工時薪", "/hr", 20, "自己的時間也要算錢"),
+        this.field("prepMin", "備料取件", "min", 5, "上料、清床、取件"),
+      ] },
+      { title: "後加工與耗材", fields: [
+        this.field("postMin", "加工工時", "min", 5, "打磨、支撐移除、上色"),
+        this.field("postMat", "加工材料", "", 5, "砂紙、補土、塗料"),
+        this.field("consumUnit", "每件耗材", "/件", 1, "手套、酒精、膠水"),
+      ] },
+      { title: "風險與報價", fields: [
+        this.field("failRate", "失敗報廢率", "%", 1, "列印失敗攤提"),
+        this.field("pack", "包裝材", "/件", 5, ""),
+        this.field("ship", "運費", "", 10, "整筆,依數量分攤"),
+        this.field("margin", "利潤率", "%", 5, "售價中的毛利占比"),
+        this.field("tax", "稅金", "%", 1, "營業稅"),
+      ] },
+    ];
+
+    const saveBrands = next => { this.setState({ brands: next }); this.persist("printcost_brands_v1", next); };
+    const brandChips = s.brands.map(b => ({
+      name: b.name,
+      style: "display: flex; align-items: center; gap: 7px; background: #20242b; border: 1px solid #262b33; color: #cdd2da; border-radius: 20px; padding: 6px 11px; font-size: 12px; font-weight: 600; font-family: 'Noto Sans TC', sans-serif;",
+      remove: () => saveBrands(s.brands.filter(x => x.id !== b.id)),
+    }));
+
+    const typeChips = s.types.map(t => ({
+      name: t.name, modeLabel: t.mode === "resin" ? "樹脂" : "FDM",
+      style: "display: flex; align-items: center; gap: 7px; background: #20242b; border: 1px solid #262b33; color: #cdd2da; border-radius: 20px; padding: 6px 11px; font-size: 12px; font-weight: 600; font-family: 'Noto Sans TC', sans-serif;",
+      remove: () => saveTypes(s.types.filter(x => x.id !== t.id)),
+    }));
+
+    const perStyle = on => "border: 1px solid " + (on ? "#3a414d" : "#262b33") + "; background: " + (on ? "#2c313a" : "transparent") +
+      "; color: " + (on ? "#e8eaee" : "#6d7482") + "; border-radius: 7px; padding: 5px 9px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans TC', sans-serif;";
+
+    const fixedRows = s.fixed.map(f => ({
+      name: f.name, amount: f.amount,
+      onName: e => this.setFixed(s.fixed.map(x => x.id === f.id ? { ...x, name: e.target.value } : x)),
+      onAmount: e => this.setFixed(s.fixed.map(x => x.id === f.id ? { ...x, amount: e.target.value === "" ? "" : Number(e.target.value) } : x)),
+      setUnit: () => this.setFixed(s.fixed.map(x => x.id === f.id ? { ...x, per: "unit" } : x)),
+      setOrder: () => this.setFixed(s.fixed.map(x => x.id === f.id ? { ...x, per: "order" } : x)),
+      unitStyle: perStyle(f.per !== "order"), orderStyle: perStyle(f.per === "order"),
+      remove: () => this.setFixed(s.fixed.filter(x => x.id !== f.id)),
+    }));
+
+    return {
+      groups, breakdown, filamentGroups, adminRows, typeChips,
+      noFilament: filamentGroups.length === 0,
+      isAdmin: s.screen === "admin",
+      tabFil: s.adminTab === "fil", tabMachine: s.adminTab === "machine", tabRate: s.adminTab === "rate",
+      tabFilStyle: atab(s.adminTab === "fil"), tabMachineStyle: atab(s.adminTab === "machine"), tabRateStyle: atab(s.adminTab === "rate"),
+      goTabFil: () => this.setState({ adminTab: "fil" }),
+      goTabMachine: () => this.setState({ adminTab: "machine" }),
+      goTabRate: () => this.setState({ adminTab: "rate" }),
+      machineRows, rateGroups, brandChips,
+      listLabel: this.n("listPrice") > 0 ? "標價 " + this.money(c.list) : "建議售價 " + this.money(c.list),
+      floorLabel: this.money(c.floor),
+      breakevenLabel: this.money(c.breakeven),
+      roomLabel: (c.room >= 0 ? "可再讓 " : "已低於底價 ") + this.money(Math.abs(c.room)),
+      roomPctLabel: (c.roomPct >= 0 ? "-" : "+") + Math.abs(Math.round(c.roomPct)) + "%",
+      roomPctStyle: "font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 26px; line-height: 1.1; color: " + (c.room >= 0 ? "#9ef01a" : "#e0685c") + ";",
+      roomBarStyle: "height: 100%; border-radius: 5px; width: " + Math.min(Math.max(c.roomPct, 0), 100) + "%; background: " + (c.room >= 0 ? "#9ef01a" : "#e0685c") + ";",
+      listMarginLabel: Math.round(c.listMarginPct) + "%",
+      discountSteps: [5, 10, 15, 20, 30].map(d => {
+        const after = c.list * (1 - d / 100);
+        const ok = after >= c.floor;
+        return {
+          label: d + "% off", price: this.money(after),
+          note: ok ? "毛利 " + Math.round(((after / c.taxMul - c.unitCost) / (after / c.taxMul)) * 100) + "%" : "低於底線",
+          style: "display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 9px; background: #191d23; border: 1px solid " + (ok ? "#262b33" : "#4a2b2b") + ";",
+          noteStyle: "font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: " + (ok ? "#7d8492" : "#e0685c") + ";",
+        };
+      }),
+      newBrand: s.newBrand,
+      onNewBrand: e => this.setState({ newBrand: e.target.value }),
+      addBrand: () => {
+        const name = (s.newBrand || "").trim();
+        if (!name || s.brands.some(b => b.name === name)) return;
+        const next = [...s.brands, { id: "b" + Date.now(), name }];
+        this.setState({ brands: next, newBrand: "" });
+        this.persist("printcost_brands_v1", next);
+      },
+      addMachine: () => {
+        const id = "m" + Date.now();
+        const base = MODELS.find(x => x.mode === s.mode) || MODELS[0];
+        const next = [...s.machines, { id, mode: base.mode, name: base.name, price: base.price, life: base.life, watt: base.watt, consum: base.consum }];
+        this.setState({ machines: next });
+        this.persist("printcost_machines_v1", next);
+      },
+      noteText: s.note,
+      onNote: e => this.setState({ note: e.target.value, copied: false }),
+      saveDefaultsLabel: s.savedFlash ? "已存為預設 ✓" : "存為預設",
+      saveDefaults: () => {
+        this.persist("printcost_defaults_v1", s.v);
+        this.persist("printcost_note_v1", s.note);
+        this.setState({ defaults: { ...s.v }, savedFlash: true });
+        setTimeout(() => this.setState({ savedFlash: false }), 1800);
+      },
+      restoreFactory: () => {
+        this.persist("printcost_defaults_v1", DEFAULTS);
+        this.persist("printcost_note_v1", NOTE);
+        this.setState({ defaults: { ...DEFAULTS }, v: { ...DEFAULTS }, note: NOTE, copied: false });
+      },
+      openAdmin: () => this.setState({ screen: "admin" }),
+      closeAdmin: () => this.setState({ screen: "calc" }),
+      filamentCount: s.filaments.length + " 款",
+      newType: s.newType,
+      newTypeModeLabel: s.newTypeMode === "resin" ? "樹脂" : "FDM",
+      onNewType: e => this.setState({ newType: e.target.value }),
+      toggleNewTypeMode: () => this.setState(st => ({ newTypeMode: st.newTypeMode === "fdm" ? "resin" : "fdm" })),
+      addType: () => {
+        const name = (s.newType || "").trim();
+        if (!name || s.types.some(t => t.name === name)) return;
+        const next = [...s.types, { id: "t" + Date.now(), name, mode: s.newTypeMode }];
+        this.setState({ types: next, newType: "" });
+        this.persist("printcost_types_v2", next);
+      },
+      addFilament: () => {
+        const t = s.types.find(x => x.mode === s.mode) || s.types[0];
+        const id = "f" + Date.now();
+        const next = [...s.filaments, { id, brand: "", type: t ? t.name : "PLA", color: "新顏色", hex: "#8b8f96", price: 600, weight: 1000, watt: 120 }];
+        this.setState({ filaments: next, openRow: id });
+        this.persist("printcost_filaments_v2", next);
+      },
+      tabFdmStyle: tab(s.mode === "fdm"), tabResinStyle: tab(s.mode === "resin"),
+      setFdm: () => this.setState({ mode: "fdm" }), setResin: () => this.setState({ mode: "resin" }),
+      priceDisplay: this.money(c.price), costDisplay: this.money(c.unitCost),
+      profitDisplay: this.money(c.profit), batchDisplay: this.money(c.batch),
+      qtyLabel: "× " + c.qty + " 件",
+      fixedRows,
+      fixedTotal: this.money(c.fixed),
+      addFixed: () => this.setFixed([...s.fixed, { id: Date.now(), name: "新項目", amount: 0, per: "unit" }]),
+      quoteText: this.quote(c),
+      copyLabel: s.copied ? "已複製 ✓" : "複製報價",
+      copyQuote: () => {
+        const t = this.quote(c);
+        try { navigator.clipboard.writeText(t); } catch (e) {}
+        this.setState({ copied: true });
+        setTimeout(() => this.setState({ copied: false }), 1800);
+      },
+      resetAll: () => this.setState(st => ({ v: { ...st.defaults }, copied: false })),
+      customer: s.customer,
+      onCustomer: e => this.setState({ customer: e.target.value }),
+      sendLabel: s.sent === "ok" ? "已送出 ✓" : s.sent === "empty" ? "報價為 0" : "送到 FilaCost",
+      sendOrder: () => {
+        const q = this.linkQuote();
+        if (!(q.batch > 0)) { this.setState({ sent: "empty" }); setTimeout(() => this.setState({ sent: null }), 1800); return; }
+        const inbox = LINK.read(LINK.K.inbox, []);
+        const list = Array.isArray(inbox) ? inbox : [];
+        list.push({
+          ts: Date.now(), item: "客製列印" + (q.material ? "(" + q.material + ")" : ""),
+          customer: (s.customer || "").trim() || "計算機報價", qty: q.qty,
+          amount: Math.round(q.batch), profit: Math.round(q.profit * q.qty), status: "待報價確認",
+          filamentId: q.filamentId, useKg: q.useKg,
+        });
+        LINK.write(LINK.K.inbox, list);
+        LINK.lastSync = Date.now();
+        this.setState({ sent: "ok", customer: "" });
+        setTimeout(() => this.setState({ sent: null }), 1800);
+      },
+      linkStatus: LINK.lastSync ? "⇄ 與 FilaCost 連動中 · 同步 " + LINK.clock(LINK.lastSync) : "⇄ FilaCost 連動待命 · 開啟後自動同步",
+      footer: "單件成本 " + this.money(c.unitCost) + " ／ 毛利率 " + Math.round((c.profit / (c.net || 1)) * 100) + "%",
+    };
+  }
+}
+</script>
+</body>
+</html>
