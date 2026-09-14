@@ -1920,7 +1920,7 @@ class Component extends DCLogic {
       sideStatStyle: 'padding:14px 16px; border-top:1px solid #2A2D31; font-size:11px; color:#6E757D; display:flex; flex-wrap:wrap; gap:6px 20px',
       topbarStyle: 'position:sticky; top:0; z-index:20; background:rgba(239,239,236,0.96); border-bottom:1px solid #DCDCD6; padding:12px 16px; display:flex; align-items:baseline; gap:8px 12px; flex-wrap:wrap',
       pageTitleStyle: 'font-size:17px; font-weight:700; letter-spacing:-0.01em; flex:1 1 auto',
-      mainPadStyle: 'padding:16px 16px 48px; flex:1 1 auto',
+      mainPadStyle: 'padding:16px 16px calc(110px + env(safe-area-inset-bottom)); flex:1 1 auto',
       toggleNav: () => this.setState(s => ({ navOpen: !s.navOpen })),
     });
   }
@@ -2812,6 +2812,26 @@ class Component extends DCLogic {
       };
     });
 
+    // 手機前台底部圓圈按鈕列(商品預覽 / 商品詳情 / 客製報價)
+    const FRONT_TABS = ['shop', 'item', 'custom'];
+    const mobileFront = !this.isAdmin() && S.vw < 900;
+    Object.assign(TAB_ICONS, {
+      shop: "<path d='M3.5 9.5L5 4h14l1.5 5.5'/><path d='M3.5 9.5a2.8 2.8 0 0 0 5.6 0 2.8 2.8 0 0 0 5.8 0 2.8 2.8 0 0 0 5.6 0'/><path d='M5 12.5V20h14v-7.5'/><path d='M10 20v-4.5h4V20'/>",
+      item: "<path d='M20.5 13.5l-7 7a1.5 1.5 0 0 1-2.1 0L3.5 12.6V3.5h9.1l7.9 7.9a1.5 1.5 0 0 1 0 2.1z'/><circle cx='8' cy='8' r='1.6'/>",
+      custom: "<path d='M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5z'/><path d='M14 3.5v5h5'/><path d='M9 13h6M9 16.5h4'/>",
+    });
+    const frontTabs = navFrontDef.filter(d => FRONT_TABS.indexOf(d[0]) >= 0).map(d => {
+      const on = S.screen === d[0];
+      return {
+        label: d[1], go: this.go(d[0]),
+        style: 'flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:2px; cursor:pointer; font-size:11px; letter-spacing:0; white-space:nowrap; overflow:hidden; font-weight:' +
+          (on ? '700' : '500') + '; color:' + (on ? '#F0A07A' : '#8A9098'),
+        iconStyle: 'display:block; width:48px; height:48px; border-radius:50%; box-sizing:border-box; border:1px solid ' + (on ? '#C2471A' : '#3A3E44') +
+          '; background-color:' + (on ? '#C2471A' : '#23262B') + '; box-shadow:' + (on ? '0 4px 12px rgba(194,71,26,0.4)' : 'none') +
+          '; background-image:' + iconUrl(d[0], on ? '#FFFFFF' : '#C9CDD2') + '; background-size:22px 22px; background-repeat:no-repeat; background-position:center',
+      };
+    });
+
     // storefront catalogue
     const cat = S.catalog.map((c, i) => {
       // 線材單價取自共用線材庫同類型平均(折扣後),沒有該類型才用預設值
@@ -3288,8 +3308,8 @@ class Component extends DCLogic {
     const queueCount = S.orderRows.filter(o => ['列印中', '排隊中', '預購集資', '募資中'].indexOf(o[6]) >= 0).length;
 
     return Object.assign({}, this.shellVals(), {
-      navItems: this.isAdmin() ? mkNav(mobileAdmin ? navAdminDef.filter(d => BOTTOM_TABS.indexOf(d[0]) < 0) : navAdminDef) : mkNav(navFrontDef),
-      showBottomBar: mobileAdmin, bottomTabs,      pageTitle: m[0], pageSub: m[1], scopeTag: S.screen === 'shop' || S.screen === 'item' || S.screen === 'custom' || S.screen === 'preorder' || S.screen === 'track' ? '前台視圖' : '後台視圖',
+      navItems: this.isAdmin() ? mkNav(mobileAdmin ? navAdminDef.filter(d => BOTTOM_TABS.indexOf(d[0]) < 0) : navAdminDef) : mkNav(mobileFront ? navFrontDef.filter(d => FRONT_TABS.indexOf(d[0]) < 0) : navFrontDef),
+      showBottomBar: mobileAdmin || mobileFront, bottomTabs: mobileFront ? frontTabs : bottomTabs,      pageTitle: m[0], pageSub: m[1], scopeTag: S.screen === 'shop' || S.screen === 'item' || S.screen === 'custom' || S.screen === 'preorder' || S.screen === 'track' ? '前台視圖' : '後台視圖',
       kpiMarginPct: sideMargin, kpiStockKg: totalKg.toFixed(1) + ' kg', kpiQueue: queueCount + ' 筆',
       kpiLink: cloudLabel,
       kpiLinkStyle: "font-family:'IBM Plex Mono',monospace; color:" + (cloudSt === 'error' ? '#E08585' : cloudSt === 'ok' ? '#6FCFAE' : '#EFEFEC'),
