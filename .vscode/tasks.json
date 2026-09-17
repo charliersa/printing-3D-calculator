@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "serve",
+            "type": "shell",
+            "command": "node",
+            "args": [".vscode/serve.js", "8080"],
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "serve",
+                "pattern": { "regexp": "^__never__$" },
+                "background": {
+                    "activesBegin": "^Serving",
+                    "beginsPattern": "^Serving",
+                    "endsPattern": "^Serving"
+                }
+            }
+        }
+    ]
+}
