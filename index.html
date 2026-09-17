@@ -918,11 +918,6 @@
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:18px; align-items:start">
           <div style="background:#fff; border:1px solid #DCDCD6; border-radius:5px; padding:20px">
             <div style="font-size:13.5px; font-weight:700; margin-bottom:14px">用電條件</div>
-            <div style="display:flex; gap:8px; margin-bottom:16px">
-              <sc-for list="{{ seasonTabs }}" as="t" hint-placeholder-count="2">
-                <div onClick="{{ t.go }}" style="{{ t.style }}">{{ t.label }}</div>
-              </sc-for>
-            </div>
             <sc-for list="{{ powerFields }}" as="r" hint-placeholder-count="4">
               <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #F7F7F4">
                 <span style="font-size:12.5px; flex:1; color:#3C4147">{{ r.label }}</span>
@@ -932,7 +927,7 @@
             </sc-for>
             <div style="margin-top:18px; background:#FAFAF8; border:1px solid #F0F0EC; border-radius:4px; padding:14px">
               <div style="display:flex; justify-content:space-between; font-size:12.5px; padding:3px 0"><span style="color:#70767C">單次列印耗電</span><span style="font-family:'IBM Plex Mono',monospace; font-weight:600">{{ power.kwh }}</span></div>
-              <div style="display:flex; justify-content:space-between; font-size:12.5px; padding:3px 0"><span style="color:#70767C">適用邊際電價</span><span style="font-family:'IBM Plex Mono',monospace; font-weight:600; color:#C2471A">{{ power.rate }}</span></div>
+              <div style="display:flex; justify-content:space-between; font-size:12.5px; padding:3px 0"><span style="color:#70767C">電價(固定)</span><span style="font-family:'IBM Plex Mono',monospace; font-weight:600; color:#C2471A">{{ power.rate }}</span></div>
               <div style="display:flex; justify-content:space-between; font-size:12.5px; padding:3px 0"><span style="color:#70767C">單次列印電費</span><span style="font-family:'IBM Plex Mono',monospace; font-weight:600">{{ power.costOnce }}</span></div>
               <div style="display:flex; justify-content:space-between; font-size:12.5px; padding:3px 0; border-top:1px solid #E7E7E2; margin-top:6px; padding-top:9px"><span style="color:#70767C">月列印 {{ power.monthlyJobs }} 次總電費</span><span style="font-family:'IBM Plex Mono',monospace; font-weight:600">{{ power.costMonth }}</span></div>
             </div>
@@ -940,15 +935,11 @@
           </div>
 
           <div style="background:#fff; border:1px solid #DCDCD6; border-radius:5px; padding:20px">
-            <div style="font-size:13.5px; font-weight:700; margin-bottom:3px">累進級距落點</div>
-            <div style="font-size:11.5px; color:#70767C; margin-bottom:16px">列印用電疊加在家戶基礎用電之上,實際成本用的是最高級距單價。目前落在 {{ power.tierName }}。</div>
-            <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="6">
-              <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:4px; background:{{ t.bg }}; border:1px solid {{ t.border }}; margin-bottom:6px">
-                <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; width:96px; color:{{ t.ink }}">{{ t.range }}</span>
-                <div style="flex:1; height:5px; background:#EFEFEC; border-radius:3px; overflow:hidden"><div style="height:100%; width:{{ t.fill }}; background:{{ t.bar }}"></div></div>
-                <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:{{ t.ink }}">{{ t.rate }}</span>
-              </div>
-            </sc-for>
+            <div style="font-size:13.5px; font-weight:700; margin-bottom:3px">電價</div>
+            <div style="font-size:11.5px; color:#70767C; margin-bottom:16px">不分累進級距、不分夏月,每度固定計價。</div>
+            <div style="display:flex; align-items:baseline; gap:8px; padding:14px; border-radius:4px; background:#FDF3EE; border:1px solid #F0C9B5">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:24px; font-weight:600; color:#C2471A">{{ power.rate }}</span>
+            </div>
             <div style="margin-top:16px; border-top:1px solid #F0F0EC; padding-top:14px; font-size:11.5px; color:#70767C; line-height:1.8">{{ power.note }}</div>
           </div>
         </div>
@@ -1335,7 +1326,7 @@
             <div style="font-size:13.5px; font-weight:700">Google Sheets 雲端資料庫</div>
             <span style="{{ cloud.statusStyle }}">{{ cloud.statusLabel }}</span>
           </div>
-          <div style="font-size:11.5px; color:#70767C; margin:5px 0 14px; line-height:1.7">線材、類型、廠商、機台、固定成本、訂單、客戶、商品、電價級距與計算機參數會存到 Google 試算表(每類資料一張工作表)。開啟頁面時自動從試算表載入;在手機或電腦新增、修改、刪除後約 1.5 秒同步到試算表,其他裝置每 30 秒(或切回視窗時)自動更新。</div>
+          <div style="font-size:11.5px; color:#70767C; margin:5px 0 14px; line-height:1.7">線材、類型、廠商、機台、固定成本、訂單、客戶、商品與計算機參數會存到 Google 試算表(每類資料一張工作表)。開啟頁面時自動從試算表載入;在手機或電腦新增、修改、刪除後約 1.5 秒同步到試算表,其他裝置每 30 秒(或切回視窗時)自動更新。</div>
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap:10px 14px">
             <div>
               <div style="font-size:11px; color:#70767C; margin-bottom:5px">Apps Script 網頁應用程式網址</div>
@@ -1356,17 +1347,11 @@
         </div>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:18px; align-items:start">
           <div style="background:#fff; border:1px solid #DCDCD6; border-radius:5px; padding:20px">
-            <div style="font-size:13.5px; font-weight:700; margin-bottom:3px">台電累進級距單價</div>
-            <div style="font-size:11.5px; color:#70767C; margin-bottom:16px">預設為住宅用電參考值,可依電費單實際級距修改。</div>
-            <sc-for list="{{ rateRows }}" as="r" hint-placeholder-count="6">
-              <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #F7F7F4">
-                <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; flex:1; color:#3C4147">{{ r.range }}</span>
-                <input type="number" step="0.01" value="{{ r.summer }}" onChange="{{ r.onSummer }}" style="width:74px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 8px; border:1px solid #DCDCD6; border-radius:3px; text-align:right" />
-                <input type="number" step="0.01" value="{{ r.normal }}" onChange="{{ r.onNormal }}" style="width:74px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 8px; border:1px solid #DCDCD6; border-radius:3px; text-align:right" />
-              </div>
-            </sc-for>
-            <div style="display:flex; justify-content:flex-end; gap:10px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9AA0A6; padding-top:8px">
-              <span style="width:74px; text-align:center">夏月</span><span style="width:74px; text-align:center">非夏月</span>
+            <div style="font-size:13.5px; font-weight:700; margin-bottom:3px">電價</div>
+            <div style="font-size:11.5px; color:#70767C; margin-bottom:16px">不分累進級距、不分夏月,成本引擎一律以固定電價計算。</div>
+            <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #F7F7F4">
+              <span style="font-size:12.5px; flex:1; color:#3C4147">每度電價</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:#C2471A">{{ elecRate }}</span>
             </div>
           </div>
           <div style="display:flex; flex-direction:column; gap:18px">
@@ -1431,6 +1416,9 @@ const TYPES = [
   { id: "t6", name: "標準樹脂", mode: "resin" },
   { id: "t7", name: "水洗樹脂", mode: "resin" },
 ];
+
+// 電價:每度固定 NT$3(不分級距、不分夏月)
+const ELEC_RATE = 3;
 
 const DEFAULT_TIERS = [
   { qty: 1, off: 0 }, { qty: 3, off: 5 }, { qty: 5, off: 8 }, { qty: 10, off: 12 }, { qty: 20, off: 18 },
@@ -1585,7 +1573,6 @@ class Component extends DCLogic {
       packaging: 0, shipping: 0, platformFee: 0, failRate: 0, margin: 0, qty: 1,
       monthlyJobs: 0,
     },
-    season: '夏月',
     rates: [
       { range: '0–120 度', summer: 1.68, normal: 1.68 },
       { range: '121–330 度', summer: 2.45, normal: 2.16 },
@@ -1774,12 +1761,6 @@ class Component extends DCLogic {
   // ---------- helpers ----------
   nt(v, d) { const n = Math.round(v * Math.pow(10, d === undefined ? 0 : d)) / Math.pow(10, d === undefined ? 0 : d); return 'NT$' + n.toLocaleString('en-US', { minimumFractionDigits: d === undefined ? 0 : d, maximumFractionDigits: d === undefined ? 0 : d }); }
   pct(v) { return (v * 100).toFixed(1) + '%'; }
-  tierBounds() { return [0, 120, 330, 500, 700, 1000, 1e9]; }
-  rateFor(kwh) {
-    const b = this.tierBounds(), rs = this.state.rates, key = this.state.season === '夏月' ? 'summer' : 'normal';
-    for (let i = b.length - 2; i >= 0; i--) { if (kwh > b[i]) return { rate: Number(rs[i][key]) || 0, idx: i }; }
-    return { rate: Number(rs[0][key]) || 0, idx: 0 };
-  }
   setP(k) { return (e) => { const v = e.target.value; this.setState(s => ({ p: Object.assign({}, s.p, { [k]: v === '' ? 0 : Number(v) }) })); }; }
 
   calc(over, qty) {
@@ -1787,9 +1768,7 @@ class Component extends DCLogic {
     const q = Math.max(1, qty || 1);
     const mat = p.weight * (1 + p.waste / 100) * (p.filament / 1000);
     const kwhUnit = (p.watts * p.hours) / 1000;
-    const totalKwh = Number(p.baseKwh) + kwhUnit * q;
-    const r = this.rateFor(totalKwh);
-    const elec = kwhUnit * r.rate;
+    const elec = kwhUnit * ELEC_RATE;
     const depr = (p.machinePrice / Math.max(1, p.machineLife) + Number(p.maint)) * p.hours;
     const labor = (p.laborMin / 60) * p.laborRate + ((p.setupMin / 60) * p.laborRate) / q;
     const post = Number(p.post);
@@ -1801,7 +1780,7 @@ class Component extends DCLogic {
     const price = cost / denom;
     const fee = price * p.platformFee / 100;
     const profit = price - cost - fee;
-    return { mat, elec, depr, labor, post, pack, failLoss, cost, price, fee, profit, margin: price > 0 ? profit / price : 0, kwhUnit, rate: r.rate, tierIdx: r.idx, totalKwh, qty: q };
+    return { mat, elec, depr, labor, post, pack, failLoss, cost, price, fee, profit, margin: price > 0 ? profit / price : 0, kwhUnit, rate: ELEC_RATE, qty: q };
   }
 
   go(screen) { return () => this.setState({ screen, navOpen: false }); }
@@ -2412,7 +2391,7 @@ class Component extends DCLogic {
       { key: "mat", title: c.resin ? "樹脂用量" : "線材用量", amount: money(c.material), fields: matFields },
       { key: "power", title: "時間與電費", amount: money(c.power), fields: [
         field("hours", "列印時數", "hr", 1), field("minutes", "分鐘", "min", 5),
-        field("kwhRate", "電價", "/度", 0.1, "台電住宅約 4.1"),
+        field("kwhRate", "電價", "/度", 0.1, "固定每度 3 元"),
         field("watt", "列印機功率", "W", 10, "電費 " + money(c.powerPrinter)),
         field("dryWatt", "烘乾機功率", "W", 10, "電費 " + money(c.powerDryer)),
         field("dryHours", "烘乾時數", "hr", 1, "分攤 " + this.cn("dryShare") + "%"),
@@ -2583,7 +2562,7 @@ class Component extends DCLogic {
 
     const rateGroups = [
       { title: "電費與工資", fields: [
-        field("kwhRate", "電價", "/度", 0.1, "台電住宅約 4.1"),
+        field("kwhRate", "電價", "/度", 0.1, "固定每度 3 元"),
         field("dryWatt", "烘乾機功率", "W", 10, "預設值"),
         field("boxWatt", "防潮箱功率", "W", 2, "預設值"),
         field("washWatt", "清洗固化機功率", "W", 10, "預設值"),
@@ -2875,13 +2854,13 @@ class Component extends DCLogic {
       dash: ['營運儀表板', '營收、成本結構與毛利趨勢'],
       sim: ['成本模擬', '敏感度、批量階梯、情境與方案並排'],
       calc: ['成本計算機', '單件報價計算 · 線材/機台/費率與後台雙向連動'],
-      power: ['電費計算', '台電累進級距 × 機台功率 × 列印時數'],
+      power: ['電費計算', '固定電價 NT$' + ELEC_RATE + '/度 × 機台功率 × 列印時數'],
       material: ['材料價格庫存清單', '線材 / 樹脂定價、量販折扣、存量與補貨建議 · 與成本計算機同步'],
       products: ['商品上架', '手動輸入 · 語音口述 · 照片辨識'],
       orders: ['訂單與預購管理', '含毛利的訂單總表與匯出 · 計算機送出的報價自動進單'],
       machines: ['機台與排程', '與手機計算機共用機台 · 狀態、工時成本與本週排程'],
       customers: ['客戶資料', '累積營收與毛利貢獻'],
-      settings: ['成本參數與預算', '級距電價、營運預設值、月預算上限'],
+      settings: ['成本參數與預算', '電價、營運預設值、月預算上限'],
     };
     const m = meta[S.screen] || meta.shop;
 
@@ -3064,7 +3043,6 @@ class Component extends DCLogic {
       { title: '機台與電力 MACHINE', rows: [
         { label: '列印時數', unit: 'h', step: 0.1, value: p.hours, onChange: this.setP('hours') },
         { label: '機台功率', unit: 'W', step: 5, value: p.watts, onChange: this.setP('watts') },
-        { label: '家戶月基礎用電', unit: 'kWh', step: 10, value: p.baseKwh, onChange: this.setP('baseKwh') },
         { label: '機器購入價', unit: '元', step: 500, value: p.machinePrice, onChange: this.setP('machinePrice') },
         { label: '折舊壽命', unit: 'h', step: 100, value: p.machineLife, onChange: this.setP('machineLife') },
         { label: '每小時維護費', unit: '元', step: 0.1, value: p.maint, onChange: this.setP('maint') },
@@ -3079,40 +3057,20 @@ class Component extends DCLogic {
 
     // power screen
     const pw = this.calc(null, 1);
-    const monthKwh = Number(p.baseKwh) + pw.kwhUnit * p.monthlyJobs;
-    const monthRate = this.rateFor(monthKwh);
-    const bounds = this.tierBounds();
-    const tiers = S.rates.map((r, i) => {
-      const active = i === monthRate.idx;
-      const span = i === S.rates.length - 1 ? 400 : bounds[i + 1] - bounds[i];
-      const used = Math.max(0, Math.min(span, monthKwh - bounds[i]));
-      return {
-        range: r.range, rate: 'NT$' + Number(S.season === '夏月' ? r.summer : r.normal).toFixed(2),
-        fill: ((used / span) * 100).toFixed(0) + '%',
-        bg: active ? '#FDF3EE' : '#FAFAF8', border: active ? '#F0C9B5' : '#F0F0EC',
-        ink: active ? '#C2471A' : '#70767C', bar: active ? '#C2471A' : '#C9C9C2',
-      };
-    });
-    const lowerRate = this.state.rates[Math.max(0, monthRate.idx - 1)][S.season === '夏月' ? 'summer' : 'normal'];
+    const monthKwh = pw.kwhUnit * p.monthlyJobs;
     const power = {
-      kwh: pw.kwhUnit.toFixed(2) + ' kWh', rate: 'NT$' + monthRate.rate.toFixed(2) + ' / 度',
-      costOnce: nt(pw.kwhUnit * monthRate.rate, 2), monthlyJobs: p.monthlyJobs,
-      costMonth: nt(pw.kwhUnit * p.monthlyJobs * monthRate.rate, 0),
-      tierName: S.rates[monthRate.idx].range, totalKwh: monthKwh.toFixed(0) + ' 度',
-      saveHint: nt(pw.kwhUnit * p.monthlyJobs * (monthRate.rate - Number(lowerRate)), 0),
+      kwh: pw.kwhUnit.toFixed(2) + ' kWh', rate: 'NT$' + ELEC_RATE.toFixed(2) + ' / 度',
+      costOnce: nt(pw.kwhUnit * ELEC_RATE, 2), monthlyJobs: p.monthlyJobs,
+      costMonth: nt(monthKwh * ELEC_RATE, 0),
       note: monthKwh <= 0
-        ? '尚未填入用電參數。填入機台功率、列印時數與每月列印次數後,系統會標出用電落在哪一段級距。'
-        : monthRate.idx === 0
-          ? '總用電 ' + monthKwh.toFixed(0) + ' 度,仍在最低級距 ' + S.rates[0].range + ',電費槓桿目前很小。'
-          : '總用電 ' + monthKwh.toFixed(0) + ' 度已超過 ' + S.rates[monthRate.idx].range + ' 起點。若把大批列印分散至兩個計費月,可避開高級距,每月約省 ' + nt(pw.kwhUnit * p.monthlyJobs * (monthRate.rate - Number(lowerRate)), 0) + '。級距單價可於「成本參數設定」調整。',
+        ? '尚未填入用電參數。填入機台功率、列印時數與每月列印次數後,即可算出每月列印電費。'
+        : '每月列印用電約 ' + monthKwh.toFixed(1) + ' 度,以固定電價每度 NT$' + ELEC_RATE + ' 計算。',
     };
     const powerFields = [
       { label: '機台功率', unit: 'W', step: 5, value: p.watts, onChange: this.setP('watts') },
       { label: '單次列印時數', unit: 'h', step: 0.1, value: p.hours, onChange: this.setP('hours') },
-      { label: '家戶月基礎用電', unit: 'kWh', step: 10, value: p.baseKwh, onChange: this.setP('baseKwh') },
       { label: '每月列印次數', unit: '次', step: 1, value: p.monthlyJobs, onChange: this.setP('monthlyJobs') },
     ];
-    const seasonTabs = ['夏月', '非夏月'].map(s => ({ label: s === '夏月' ? '夏月 6–9 月' : '非夏月', go: () => this.setState({ season: s }), style: this.pill(S.season === s) }));
 
     // materials(與計算機共用線材庫)
     const matDefs = S.filaments.map(fl => [this.filName(fl), fl.sku || '', fl.type || '', Math.round(this.filPerKg(fl) * 10) / 10,
@@ -3136,7 +3094,7 @@ class Component extends DCLogic {
       { label: '本月毛利', value: nt(dashProf), delta: '+21.4% MoM', color: '#0F6E62' },
       { label: '平均毛利率', value: dashRev ? ((dashProf / dashRev) * 100).toFixed(1) + '%' : '—', delta: '+1.8 pt', color: '#0F6E62' },
       { label: '材料成本', value: nt(dashRev - dashProf), delta: '+9.1% 線材漲價', color: '#B4231F' },
-      { label: '列印電費', value: nt(pw.kwhUnit * p.monthlyJobs * monthRate.rate), delta: monthRate.idx > 0 ? '已進 ' + S.rates[monthRate.idx].range + '級距' : '仍在 ' + S.rates[0].range + '級距', color: monthRate.idx > 2 ? '#B4231F' : '#0F6E62' },
+      { label: '列印電費', value: nt(monthKwh * ELEC_RATE), delta: '固定每度 NT$' + ELEC_RATE, color: '#0F6E62' },
     ];
     const costMix = [
       { label: '材料', pct: '38%', color: '#C2471A' }, { label: '人工與後處理', pct: '22%', color: '#15171A' },
@@ -3171,7 +3129,7 @@ class Component extends DCLogic {
         bg: d[3] === '列印中' ? '#FDF3EE' : d[3] === '待料' ? '#FFF8E6' : '#F4F4F0',
         ink: d[3] === '列印中' ? '#C2471A' : d[3] === '待料' ? '#8A6D1F' : '#70767C',
         bar: d[3] === '列印中' ? '#C2471A' : '#C9C9C2',
-        cost: nt((d[2] / 1000) * 120 * monthRate.rate + (hourly + (Number(mc.consum) || 0)) * 120),
+        cost: nt((d[2] / 1000) * 120 * ELEC_RATE + (hourly + (Number(mc.consum) || 0)) * 120),
         apply: () => this.applyMachine(mc),
         applyLabel: on ? '成本模擬使用中 ✓' : '套用到成本模擬',
         applyStyle: 'margin-top:11px; text-align:center; border-radius:4px; padding:8px; font-size:12px; cursor:pointer; border:1px solid ' +
@@ -3199,11 +3157,6 @@ class Component extends DCLogic {
     }));
     const addCustomer = this.addRow('customer', 'customerRows', [3, 4, 5], ['', '', '', '', '', '', '']);
 
-    const rateRows = S.rates.map((r, i) => ({
-      range: r.range, summer: r.summer, normal: r.normal,
-      onSummer: (e) => this.setState(s => { const rs = s.rates.slice(); rs[i] = Object.assign({}, rs[i], { summer: Number(e.target.value) || 0 }); return { rates: rs }; }),
-      onNormal: (e) => this.setState(s => { const rs = s.rates.slice(); rs[i] = Object.assign({}, rs[i], { normal: Number(e.target.value) || 0 }); return { rates: rs }; }),
-    }));
     const settingRows = [
       { label: '預設目標毛利率', unit: '%', step: 1, value: p.margin, onChange: this.setP('margin') },
       { label: '預設損耗率', unit: '%', step: 1, value: p.waste, onChange: this.setP('waste') },
@@ -3217,7 +3170,7 @@ class Component extends DCLogic {
     ];
     const budget = budgetDefs.map(b => {
       const r = b[1] / b[2], over = r > 1;
-      return { label: b[0], used: nt(b[1]), cap: nt(b[2]), pct: Math.min(100, r * 100).toFixed(0) + '%', color: over ? '#B4231F' : r > 0.85 ? '#C2471A' : '#0F6E62', note: over ? '超支 ' + nt(b[1] - b[2]) + ' · 檢視級距或分散列印' : '剩餘 ' + nt(b[2] - b[1]) };
+      return { label: b[0], used: nt(b[1]), cap: nt(b[2]), pct: Math.min(100, r * 100).toFixed(0) + '%', color: over ? '#B4231F' : r > 0.85 ? '#C2471A' : '#0F6E62', note: over ? '超支 ' + nt(b[1] - b[2]) + ' · 檢視用電與列印排程' : '剩餘 ' + nt(b[2] - b[1]) };
     });
 
     const campaigns = [
@@ -3398,7 +3351,7 @@ class Component extends DCLogic {
         { k: '批次總計', v: nt(CQ.batch), sub: '× ' + CQ.qty + ' 件' },
         { k: '毛利率', v: (Number(CQ.marginPct) || 0).toFixed(1) + '%', sub: '本系統 ' + pc(base.margin) },
       ],
-      note: '左側參數與「成本計算機」頁雙向同步。兩邊價格不同來自引擎假設:計算機用固定電價、營業稅與固定成本項目;本系統用台電累進級距、平台手續費與整批開機攤提。',
+      note: '左側參數與「成本計算機」頁雙向同步。兩邊價格不同來自引擎假設:計算機用自訂電價、營業稅與固定成本項目;本系統用固定電價每度 NT$' + ELEC_RATE + '、平台手續費。',
       toOrder: () => {
         this.addLinkedOrders([{ item: '客製列印' + (CQ.material ? '(' + CQ.material + ')' : ''), customer: '計算機報價', qty: CQ.qty,
           amount: Math.round(CQ.batch), profit: Math.round(CQ.profit * CQ.qty), filamentId: CQ.filamentId, useKg: CQ.useKg }]);
@@ -3421,8 +3374,8 @@ class Component extends DCLogic {
       canInstall: S.canInstall, installApp: this.installApp,
       cloud,
       hasCalcQuote, cq, pc: this.calcVals(),
-      pushRate: () => { this.setState(s => ({ v: Object.assign({}, s.v, { kwhRate: r2(monthRate.rate) }) })); this.flash('rateSent'); },
-      pushRateLabel: S.rateSent ? '已套用到成本計算機 ✓' : '把邊際電價 NT$' + monthRate.rate.toFixed(2) + ' 套用到成本計算機',
+      pushRate: () => { this.setState(s => ({ v: Object.assign({}, s.v, { kwhRate: ELEC_RATE }) })); this.flash('rateSent'); },
+      pushRateLabel: S.rateSent ? '已套用到成本計算機 ✓' : '把電價 NT$' + ELEC_RATE.toFixed(2) + ' 套用到成本計算機',
       isShop: S.screen === 'shop', isItem: S.screen === 'item', isCustom: S.screen === 'custom',
       isPreorder: S.screen === 'preorder', isTrack: S.screen === 'track', isDash: S.screen === 'dash',
       isSim: S.screen === 'sim', isPower: S.screen === 'power', isMaterial: S.screen === 'material',
@@ -3436,7 +3389,7 @@ class Component extends DCLogic {
         { k: '案件參數', v: '重量、時數、工資、失敗率、利潤率等與「成本模擬」雙向同步' },
         { k: '即時報價', v: '計算機結果顯示在「成本模擬」頁頂端,與本系統引擎並排對照' },
         { k: '送出訂單', v: '報價單按「建立訂單」→ 進入訂單並扣除線材庫存' },
-        { k: '級距電價', v: '「電費計算」可把台電邊際電價套用回計算機' },
+        { k: '固定電價', v: '「電費計算」可把每度 NT$3 電價套用回計算機' },
       ],
       shopFilters: filters.map(x => ({ label: x, go: () => this.setState({ shopFilter: x }), style: this.pill(S.shopFilter === x) })),
       shopItems, item, customFields, quote,
@@ -3465,8 +3418,8 @@ class Component extends DCLogic {
       paramGroups, sensKeys, sens, sensRaw: S.sens, sensLabel: (S.sens > 0 ? '+' : '') + S.sens + '%',
       onSens: (e) => this.setState({ sens: Number(e.target.value) }),
       ladder, ladderSaving, scenarios, plans, planCols: plans.length,
-      power, powerFields, seasonTabs, tiers,
-      matKpis, orders, orderTabs, machines, schedule, customers, rateRows, settingRows, budget,
+      power, powerFields, elecRate: 'NT$' + ELEC_RATE.toFixed(2) + ' / 度',
+      matKpis, orders, orderTabs, machines, schedule, customers, settingRows, budget,
       matDraft, addMaterial, orderDraft, addOrder, statusOptions, machineDraft, addMachine, customerDraft, addCustomer,
       isEdit: S.editMode, isView: !S.editMode,
       matViewRows: S.editMode ? [] : priceRows,

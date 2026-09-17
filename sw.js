@@ -1,7 +1,7 @@
 /* FilaCost 3D列印成本系統 — Service Worker(離線快取)
  * 更新網站檔案後,把 VERSION 改成新值,使用者下次開啟就會換成新版快取。
  */
-const VERSION = 'filacost-v5';
+const VERSION = 'filacost-v6';
 const SHELL_CACHE = VERSION + '-shell';
 const RUNTIME_CACHE = VERSION + '-runtime';
 
