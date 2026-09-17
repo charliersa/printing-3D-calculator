@@ -954,27 +954,44 @@
         </div>
       </sc-if>
 
-      <!-- ===== 材料庫存 ===== -->
+      <!-- ===== 材料價格庫存清單 ===== -->
       <sc-if value="{{ isMaterial }}" hint-placeholder-val="{{ true }}">
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap:14px; margin-bottom:20px">
-          <sc-for list="{{ matKpis }}" as="k" hint-placeholder-count="4">
-            <div style="background:#fff; border:1px solid #DCDCD6; border-radius:5px; padding:15px 16px">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap:14px; margin-bottom:20px">
+          <sc-for list="{{ matKpis }}" as="k" hint-placeholder-count="6">
+            <div style="background:#fff; border:1px solid #DCDCD6; border-radius:5px; padding:15px 16px; min-width:0">
               <div style="font-size:11.5px; color:#70767C">{{ k.label }}</div>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; margin-top:6px">{{ k.value }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:21px; font-weight:600; margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ k.value }}</div>
+              <div style="font-size:11px; color:#9AA0A6; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ k.sub }}</div>
             </div>
           </sc-for>
         </div>
         <div style="background:#fff; border:1px solid #DCDCD6; border-radius:5px; overflow:hidden">
           <div style="padding:16px 20px; border-bottom:1px solid #E7E7E2; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
-            <div style="font-size:13.5px; font-weight:700">線材庫存與進貨建議</div>
-            <div style="font-size:11.5px; color:#70767C">低於安全庫存自動加入採購清單</div>
+            <div>
+              <div style="font-size:13.5px; font-weight:700">材料價格庫存清單</div>
+              <div style="font-size:11.5px; color:#70767C; margin-top:3px">與成本計算機線材庫同步 · 改價即時影響報價與前台售價 · 低於安全庫存自動列入採購建議</div>
+            </div>
+            <div onClick="{{ copyPriceList }}" style="border:1px solid #15171A; padding:8px 14px; border-radius:4px; font-size:12.5px; cursor:pointer; background:#fff; white-space:nowrap" style-hover="background:#15171A; color:#fff">{{ copyPriceLabel }}</div>
+          </div>
+          <div style="padding:12px 20px; border-bottom:1px solid #F0F0EC; display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+            <sc-for list="{{ priceFilters }}" as="f" hint-placeholder-count="5">
+              <div onClick="{{ f.go }}" style="{{ f.style }}">{{ f.label }}</div>
+            </sc-for>
+            <span style="flex:1 1 12px"></span>
+            <sc-for list="{{ priceSorts }}" as="s" hint-placeholder-count="4">
+              <div onClick="{{ s.go }}" style="{{ s.style }}">{{ s.label }}</div>
+            </sc-for>
           </div>
           <div style="overflow-x:auto">
-            <div style="min-width:860px">
-              <div style="display:grid; grid-template-columns:1.4fr 0.7fr 0.8fr 1fr 0.8fr 0.9fr 0.9fr 34px; gap:0 14px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#70767C; letter-spacing:0.06em; padding:11px 20px; background:#FAFAF8; border-bottom:1px solid #E7E7E2">
-                <span>材料 / 廠牌</span><span>類型</span><span style="text-align:right">單價/kg</span><span>存量</span><span style="text-align:right">可印件數</span><span style="text-align:right">30日用量</span><span style="text-align:right">建議</span><span></span>
+            <div style="min-width:1140px">
+              <div style="display:grid; grid-template-columns:1.35fr 0.6fr 0.75fr 0.85fr 0.75fr 1fr 1fr 0.6fr 0.7fr 150px; gap:0 12px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#70767C; letter-spacing:0.06em; padding:11px 20px; background:#FAFAF8; border-bottom:1px solid #E7E7E2">
+                <span>材料 / 料號</span><span>類型</span><span>規格</span><span>整卷定價</span><span>採購量</span><span style="text-align:right">單價</span><span>存量 / 安全量</span><span style="text-align:right">可印件數</span><span style="text-align:right">建議</span><span></span>
               </div>
+
               <sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid; grid-template-columns:1.4fr 0.7fr 0.8fr 1fr 0.8fr 0.9fr 0.9fr 34px; gap:0 10px; padding:9px 20px 3px; font-size:10.5px; color:#0F6E62; font-family:'IBM Plex Mono',monospace">
+                  <span>材料 / 廠牌</span><span>料號</span><span>類型</span><span>單價/kg</span><span>存量 kg</span><span>安全量 kg</span><span>30日用量</span><span></span>
+                </div>
                 <sc-for list="{{ matEditRows }}" as="r" hint-placeholder-count="6">
                   <div style="display:grid; grid-template-columns:1.4fr 0.7fr 0.8fr 1fr 0.8fr 0.9fr 0.9fr 34px; gap:0 10px; align-items:center; padding:8px 20px; border-bottom:1px solid #F4F4F0">
                     <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="7">
@@ -984,68 +1001,10 @@
                   </div>
                 </sc-for>
               </sc-if>
-              <sc-for list="{{ matViewRows }}" as="m" hint-placeholder-count="6">
-                <div style="display:grid; grid-template-columns:1.4fr 0.7fr 0.8fr 1fr 0.8fr 0.9fr 0.9fr 34px; gap:0 14px; align-items:center; padding:13px 20px; border-bottom:1px solid #F4F4F0; font-size:12.5px">
-                  <div><div style="font-weight:500">{{ m.name }}</div><div style="font-size:11px; color:#9AA0A6; font-family:'IBM Plex Mono',monospace">{{ m.sku }}</div></div>
-                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#70767C">{{ m.type }}</span>
-                  <span style="font-family:'IBM Plex Mono',monospace; text-align:right">{{ m.price }}</span>
-                  <div style="padding-right:14px">
-                    <div style="height:5px; background:#EFEFEC; border-radius:3px; overflow:hidden"><div style="height:100%; width:{{ m.fill }}; background:{{ m.bar }}"></div></div>
-                    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#70767C; margin-top:5px">{{ m.stock }}</div>
-                  </div>
-                  <span style="font-family:'IBM Plex Mono',monospace; text-align:right">{{ m.parts }}</span>
-                  <span style="font-family:'IBM Plex Mono',monospace; text-align:right; color:#70767C">{{ m.burn }}</span>
-                  <span style="font-family:'IBM Plex Mono',monospace; text-align:right; font-size:11.5px; color:{{ m.ink }}; font-weight:600">{{ m.advice }}</span>
-                  <div onClick="{{ m.del }}" title="刪除此材料" style="justify-self:end; width:26px; height:26px; display:flex; align-items:center; justify-content:center; border:1px solid #E7E7E2; border-radius:3px; color:#9AA0A6; font-size:13px; cursor:pointer" style-hover="border-color:#B4231F; color:#B4231F">✕</div>
-                </div>
-              </sc-for>
-              <div style="display:grid; grid-template-columns:1.4fr 0.7fr 0.8fr 1fr 0.8fr 0.9fr 0.9fr 34px; gap:0 14px; gap:6px; align-items:center; padding:12px 20px; background:#FAFAF8; border-top:1px solid #E7E7E2">
-                <sc-for list="{{ matDraft }}" as="f" hint-placeholder-count="7">
-                  <input type="text" value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.ph }}" style="width:100%; min-width:0; font-size:12px; padding:7px 8px; border:1px solid #DCDCD6; border-radius:3px; background:#fff" />
-                </sc-for>
-                <div onClick="{{ addMaterial }}" title="新增材料" style="justify-self:end; width:26px; height:26px; display:flex; align-items:center; justify-content:center; background:#15171A; color:#fff; border-radius:3px; font-size:14px; cursor:pointer" style-hover="background:#C2471A">＋</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </sc-if>
 
-      <!-- ===== 材料價格清單 ===== -->
-      <sc-if value="{{ isPrices }}" hint-placeholder-val="{{ true }}">
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap:14px; margin-bottom:20px">
-          <sc-for list="{{ priceKpis }}" as="k" hint-placeholder-count="4">
-            <div style="background:#fff; border:1px solid #DCDCD6; border-radius:5px; padding:15px 16px">
-              <div style="font-size:11.5px; color:#70767C">{{ k.label }}</div>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; margin-top:6px">{{ k.value }}</div>
-              <div style="font-size:11px; color:#9AA0A6; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ k.sub }}</div>
-            </div>
-          </sc-for>
-        </div>
-        <div style="background:#fff; border:1px solid #DCDCD6; border-radius:5px; overflow:hidden">
-          <div style="padding:16px 20px; border-bottom:1px solid #E7E7E2; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
-            <div>
-              <div style="font-size:13.5px; font-weight:700">材料價格清單</div>
-              <div style="font-size:11.5px; color:#70767C; margin-top:3px">與成本計算機線材庫同步 · 改價即時影響報價與前台售價</div>
-            </div>
-            <div onClick="{{ copyPriceList }}" style="border:1px solid #15171A; padding:8px 14px; border-radius:4px; font-size:12.5px; cursor:pointer; background:#fff; white-space:nowrap" style-hover="background:#15171A; color:#fff">{{ copyPriceLabel }}</div>
-          </div>
-          <div style="padding:12px 20px; border-bottom:1px solid #F0F0EC; display:flex; gap:8px; flex-wrap:wrap; align-items:center">
-            <sc-for list="{{ priceFilters }}" as="f" hint-placeholder-count="5">
-              <div onClick="{{ f.go }}" style="{{ f.style }}">{{ f.label }}</div>
-            </sc-for>
-            <span style="flex:1 1 12px"></span>
-            <sc-for list="{{ priceSorts }}" as="s" hint-placeholder-count="3">
-              <div onClick="{{ s.go }}" style="{{ s.style }}">{{ s.label }}</div>
-            </sc-for>
-          </div>
-          <div style="overflow-x:auto">
-            <div style="min-width:980px">
-              <div style="display:grid; grid-template-columns:1.5fr 0.7fr 0.8fr 0.9fr 0.8fr 0.55fr 0.8fr 1fr 0.7fr 104px; gap:0 12px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#70767C; letter-spacing:0.06em; padding:11px 20px; background:#FAFAF8; border-bottom:1px solid #E7E7E2">
-                <span>材料 / 料號</span><span>類型</span><span>規格</span><span>整卷定價</span><span>採購量</span><span style="text-align:right">折扣</span><span style="text-align:right">折後單價</span><span style="text-align:right">單價</span><span style="text-align:right">每克</span><span></span>
-              </div>
-              <sc-for list="{{ priceRows }}" as="pr" hint-placeholder-count="6">
+              <sc-for list="{{ matViewRows }}" as="pr" hint-placeholder-count="6">
                 <div style="padding:12px 20px; border-bottom:1px solid #F4F4F0">
-                  <div style="display:grid; grid-template-columns:1.5fr 0.7fr 0.8fr 0.9fr 0.8fr 0.55fr 0.8fr 1fr 0.7fr 104px; gap:0 12px; align-items:center; font-size:12.5px">
+                  <div style="display:grid; grid-template-columns:1.35fr 0.6fr 0.75fr 0.85fr 0.75fr 1fr 1fr 0.6fr 0.7fr 150px; gap:0 12px; align-items:center; font-size:12.5px">
                     <div style="display:flex; align-items:center; gap:9px; min-width:0">
                       <span style="{{ pr.dot }}"></span>
                       <div style="min-width:0">
@@ -1070,24 +1029,51 @@
                         <option value="{{ qo.value }}">{{ qo.label }}</option>
                       </sc-for>
                     </select>
-                    <span style="{{ pr.offStyle }}">{{ pr.off }}</span>
-                    <span style="font-family:'IBM Plex Mono',monospace; text-align:right">{{ pr.net }}</span>
-                    <div style="text-align:right">
+                    <div style="text-align:right; min-width:0">
                       <div style="font-family:'IBM Plex Mono',monospace; font-weight:600">{{ pr.perKg }}</div>
-                      <div style="height:3px; background:#EFEFEC; border-radius:2px; margin-top:5px; overflow:hidden"><div style="{{ pr.barStyle }}"></div></div>
+                      <div style="{{ pr.offStyle }}">{{ pr.offLine }}</div>
+                      <div style="height:3px; background:#EFEFEC; border-radius:2px; margin-top:4px; overflow:hidden"><div style="{{ pr.barStyle }}"></div></div>
                     </div>
-                    <span style="font-family:'IBM Plex Mono',monospace; text-align:right; color:#70767C">{{ pr.perG }}</span>
-                    <div onClick="{{ pr.apply }}" style="{{ pr.applyStyle }}">{{ pr.applyLabel }}</div>
+                    <div style="min-width:0">
+                      <div style="height:5px; background:#EFEFEC; border-radius:3px; overflow:hidden"><div style="{{ pr.stockBarStyle }}"></div></div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#70767C; margin-top:5px">{{ pr.stock }}</div>
+                    </div>
+                    <span style="font-family:'IBM Plex Mono',monospace; text-align:right">{{ pr.parts }}</span>
+                    <span style="{{ pr.adviceStyle }}">{{ pr.advice }}</span>
+                    <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center">
+                      <div onClick="{{ pr.apply }}" style="{{ pr.applyStyle }}">{{ pr.applyLabel }}</div>
+                      <div onClick="{{ pr.del }}" title="刪除此材料" style="flex:0 0 26px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; border:1px solid #E7E7E2; border-radius:3px; color:#9AA0A6; font-size:13px; cursor:pointer" style-hover="border-color:#B4231F; color:#B4231F">✕</div>
+                    </div>
                   </div>
-                  <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9AA0A6; margin-top:7px; padding-left:23px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">量販階梯 {{ pr.ladder }}</div>
+                  <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 16px; margin-top:8px; padding-left:23px">
+                    <div style="flex:1 1 320px; min-width:0; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9AA0A6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">量販階梯 {{ pr.ladder }}</div>
+                    <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:#70767C; white-space:nowrap">
+                      <span>存量</span>
+                      <input type="number" step="0.1" value="{{ pr.stockKg }}" onChange="{{ pr.onStock }}" style="width:62px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:4px 6px; border:1px solid #DCDCD6; border-radius:3px; text-align:right" />
+                      <span>安全量</span>
+                      <input type="number" step="0.1" value="{{ pr.safeKg }}" onChange="{{ pr.onSafe }}" style="width:58px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:4px 6px; border:1px solid #DCDCD6; border-radius:3px; text-align:right" />
+                      <span>30日用量</span>
+                      <input type="number" step="0.1" value="{{ pr.burnKg }}" onChange="{{ pr.onBurn }}" style="width:58px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:4px 6px; border:1px solid #DCDCD6; border-radius:3px; text-align:right" />
+                      <span style="font-family:'IBM Plex Mono',monospace">{{ pr.stockUnit }}</span>
+                    </div>
+                  </div>
                 </div>
               </sc-for>
+
               <sc-if value="{{ noPriceRows }}" hint-placeholder-val="{{ false }}">
-                <div style="padding:26px 20px; text-align:center; font-size:12.5px; color:#9AA0A6">這個類型還沒有材料,可到「材料庫存」或「成本計算機 → ⚙ 線材後台」新增。</div>
+                <div style="padding:26px 20px; text-align:center; font-size:12.5px; color:#9AA0A6">目前沒有材料。可在下方新增,或到「成本計算機 → ⚙ 線材後台」建立。</div>
               </sc-if>
+
+              <div style="padding:10px 20px 0; font-size:11px; color:#70767C; background:#FAFAF8; border-top:1px solid #E7E7E2">新增材料</div>
+              <div style="display:grid; grid-template-columns:1.4fr 0.7fr 0.8fr 1fr 0.8fr 0.9fr 0.9fr 34px; gap:6px; align-items:center; padding:8px 20px 12px; background:#FAFAF8">
+                <sc-for list="{{ matDraft }}" as="f" hint-placeholder-count="7">
+                  <input type="text" value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.ph }}" style="width:100%; min-width:0; font-size:12px; padding:7px 8px; border:1px solid #DCDCD6; border-radius:3px; background:#fff" />
+                </sc-for>
+                <div onClick="{{ addMaterial }}" title="新增材料" style="justify-self:end; width:26px; height:26px; display:flex; align-items:center; justify-content:center; background:#15171A; color:#fff; border-radius:3px; font-size:14px; cursor:pointer" style-hover="background:#C2471A">＋</div>
+              </div>
             </div>
           </div>
-          <div style="padding:12px 20px; background:#FAFAF8; border-top:1px solid #E7E7E2; font-size:11.5px; color:#70767C; line-height:1.7">單價依「採購量」對應的量販折扣計算。量販階梯與各級折扣 % 可在「成本計算機 → ⚙ 線材後台」調整;存量與補貨建議請見「材料庫存」。</div>
+          <div style="padding:12px 20px; background:#FAFAF8; border-top:1px solid #E7E7E2; font-size:11.5px; color:#70767C; line-height:1.7">單價依「採購量」對應的量販折扣計算,量販折扣 % 可在「成本計算機 → ⚙ 線材後台」調整。名稱、料號、類型可按右上「編輯內容」修改。</div>
         </div>
       </sc-if>
 
@@ -1723,8 +1709,9 @@ class Component extends DCLogic {
     // PWA:捷徑網址 ?screen=calc 直接開到指定頁面
     try {
       const target = new URLSearchParams(window.location.search).get('screen');
-      const SCREENS = ['shop', 'item', 'custom', 'preorder', 'track', 'dash', 'sim', 'calc', 'power', 'material', 'prices', 'products', 'orders', 'machines', 'customers', 'settings'];
-      if (target && SCREENS.indexOf(target) >= 0) this.setState({ screen: target });
+      const SCREENS = ['shop', 'item', 'custom', 'preorder', 'track', 'dash', 'sim', 'calc', 'power', 'material', 'products', 'orders', 'machines', 'customers', 'settings'];
+      const screen = target === 'prices' ? 'material' : target; // 舊的「材料價格」網址併入材料價格庫存清單
+      if (screen && SCREENS.indexOf(screen) >= 0) this.setState({ screen });
     } catch (e) {}
     // PWA:安裝按鈕、恢復網路時補傳離線期間的變更
     this._onInstall = () => this.setState({ canInstall: !!window.__fcInstallPrompt });
@@ -1864,7 +1851,7 @@ class Component extends DCLogic {
     if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', this._onFocus);
     if (this._pollTimer && typeof window.clearInterval === 'function') window.clearInterval(this._pollTimer); }
 
-  isAdmin() { return ['dash','sim','calc','power','material','prices','products','orders','machines','customers','settings'].indexOf(this.state.screen) >= 0; }
+  isAdmin() { return ['dash','sim','calc','power','material','products','orders','machines','customers','settings'].indexOf(this.state.screen) >= 0; }
 
   toggleMode = () => {
     this.setState({ screen: this.isAdmin() ? 'shop' : 'dash', navOpen: false });
@@ -2893,8 +2880,7 @@ class Component extends DCLogic {
       sim: ['成本模擬', '敏感度、批量階梯、情境與方案並排'],
       calc: ['成本計算機', '單件報價計算 · 線材/機台/費率與後台雙向連動'],
       power: ['電費計算', '台電累進級距 × 機台功率 × 列印時數'],
-      material: ['材料庫存與進貨', '與成本計算機共用線材庫 · 存量、可印件數與採購建議'],
-      prices: ['材料價格清單', '線材 / 樹脂定價、量販折扣與每公斤單價 · 與成本計算機同步'],
+      material: ['材料價格庫存清單', '線材 / 樹脂定價、量販折扣、存量與補貨建議 · 與成本計算機同步'],
       products: ['商品上架', '手動輸入 · 語音口述 · 照片辨識'],
       orders: ['訂單與預購管理', '含毛利的訂單總表與匯出 · 計算機送出的報價自動進單'],
       machines: ['機台與排程', '與手機計算機共用機台 · 狀態、工時成本與本週排程'],
@@ -2904,7 +2890,7 @@ class Component extends DCLogic {
     const m = meta[S.screen] || meta.shop;
 
     const navFrontDef = [['shop', '商品預覽', '01'], ['item', '商品詳情', '02'], ['custom', '客製報價', '03'], ['preorder', '預購專案', '04'], ['track', '我的訂單', '05']];
-    const navAdminDef = [['dash', '營運儀表板', '10'], ['sim', '成本模擬', '11'], ['calc', '成本計算機', '12'], ['power', '電費計算', '13'], ['material', '材料庫存', '14'], ['prices', '材料價格', '15'], ['products', '商品上架', '16'], ['orders', '訂單/預購', '17'], ['machines', '機台排程', '18'], ['customers', '客戶資料', '19'], ['settings', '參數與預算', '20']];
+    const navAdminDef = [['dash', '營運儀表板', '10'], ['sim', '成本模擬', '11'], ['calc', '成本計算機', '12'], ['power', '電費計算', '13'], ['material', '材料價格庫存', '14'], ['products', '商品上架', '16'], ['orders', '訂單/預購', '17'], ['machines', '機台排程', '18'], ['customers', '客戶資料', '19'], ['settings', '參數與預算', '20']];
     const mkNav = (def) => def.map(d => ({ label: d[1], go: this.go(d[0]), style: this.navItem(S.screen === d[0]), on: S.screen === d[0] ? '1' : '0' }));
 
     // 手機後台底部按鈕列
@@ -2922,7 +2908,7 @@ class Component extends DCLogic {
     const bottomTabs = navAdminDef.filter(d => BOTTOM_TABS.indexOf(d[0]) >= 0).map(d => {
       const on = S.screen === d[0], ink = on ? '#F0A07A' : '#8A9098';
       return {
-        label: d[1], go: this.go(d[0]),
+        label: ({ material: '價格庫存' })[d[0]] || d[1], go: this.go(d[0]),
         style: 'flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-height:54px; padding:0 2px; border-radius:8px; cursor:pointer; font-size:10.5px; letter-spacing:0; white-space:nowrap; overflow:hidden; color:' +
           ink + '; background:' + (on ? '#23262B' : 'transparent'),
         iconStyle: 'display:block; width:24px; height:24px; background-image:' + iconUrl(d[0], ink) + '; background-size:24px 24px; background-repeat:no-repeat; background-position:center',
@@ -3142,27 +3128,10 @@ class Component extends DCLogic {
     // materials(與計算機共用線材庫)
     const matDefs = S.filaments.map(fl => [this.filName(fl), fl.sku || '', fl.type || '', Math.round(this.filPerKg(fl) * 10) / 10,
       Number(fl.stockKg) || 0, Number(fl.safeKg) || 0, Number(fl.burnKg) || 0]);
-    const materials = matDefs.map((d, di) => {
-      const low = d[4] < d[5] * 0.25;
-      const fill = d[5] > 0 ? Math.min(100, (d[4] / d[5]) * 100) : (d[4] > 0 ? 100 : 0);
-      return {
-        name: d[0], sku: d[1], type: d[2], price: nt(d[3]), stock: d[4].toFixed(1) + ' / ' + d[5] + ' kg',
-        parts: (p.weight > 0 ? Math.floor((d[4] * 1000) / (p.weight * (1 + p.waste / 100))) + ' 件' : '—'),
-        burn: d[6].toFixed(1) + ' kg', fill: fill.toFixed(0) + '%',
-        bar: low ? '#B4231F' : fill < 50 ? '#C2471A' : '#0F6E62',
-        advice: low ? '立即補貨' : fill < 50 ? '兩週內進貨' : '充足',
-        ink: low ? '#B4231F' : fill < 50 ? '#C2471A' : '#70767C',
-        del: this.delFil(S.filaments[di].id),
-      };
-    });
     const stockValue = matDefs.reduce((a, d) => a + d[3] * d[4], 0);
     const totalKg = matDefs.filter(d => d[2] !== '耗材').reduce((a, d) => a + d[4], 0);
     const lowCount = matDefs.filter(d => d[4] < d[5] * 0.25).length;
     const restockCost = matDefs.filter(d => d[4] < d[5] * 0.5).reduce((a, d) => a + (d[5] - d[4]) * d[3], 0);
-    const matKpis = [
-      { label: '庫存總值', value: nt(stockValue) }, { label: '線材總重', value: totalKg.toFixed(1) + ' kg' },
-      { label: '低於安全庫存', value: lowCount + ' 項' }, { label: '本月採購建議', value: nt(restockCost) },
-    ];
     const matDraft = ['材料 / 廠牌', '料號', '類型', '單價/kg', '存量 kg', '安全量 kg', '30日用量'].map((ph, i) => ({
       ph, value: S.draft.material[i], onChange: this.setDraft('material', i), wide: i === 0,
     }));
@@ -3343,14 +3312,23 @@ class Component extends DCLogic {
       detailStyle: 'font-size:11.5px; margin-top:12px; line-height:1.6; word-break:break-all; color:' + (cloudSt === 'error' ? '#B4231F' : '#70767C'),
     };
 
-    // 材料價格清單(與共用線材庫同一份資料)
+    // 材料價格庫存清單(與共用線材庫同一份資料)
+    const stockState = fl => {
+      const stock = Number(fl.stockKg) || 0, safe = Number(fl.safeKg) || 0;
+      const fill = safe > 0 ? Math.min(100, (stock / safe) * 100) : (stock > 0 ? 100 : 0);
+      const low = stock < safe * 0.25;
+      return { stock, safe, fill, low, level: low ? 2 : fill < 50 ? 1 : 0 };
+    };
     const priceModeOf = name => (S.types.find(t => t.name === name) || {}).mode || 'fdm';
     const priceTypes = ['全部'].concat(S.filaments.map(fl => fl.type).filter((x, i, a) => x && a.indexOf(x) === i));
     const priceFilter = priceTypes.indexOf(S.priceFilter) >= 0 ? S.priceFilter : '全部';
     const priceAll = S.filaments.map((fl, i) => ({ fl, i, perKg: this.filPerKg(fl), resin: priceModeOf(fl.type) === 'resin' }));
     const typeRank = name => { const r = S.types.findIndex(t => t.name === name); return r < 0 ? 999 : r; };
     const priceList = priceAll.filter(x => priceFilter === '全部' || x.fl.type === priceFilter).sort((a, b) =>
-      S.priceSort === 'asc' ? a.perKg - b.perKg : S.priceSort === 'desc' ? b.perKg - a.perKg : (typeRank(a.fl.type) - typeRank(b.fl.type)) || (a.i - b.i));
+      S.priceSort === 'asc' ? a.perKg - b.perKg
+        : S.priceSort === 'desc' ? b.perKg - a.perKg
+        : S.priceSort === 'stock' ? (stockState(b.fl).level - stockState(a.fl).level) || (stockState(a.fl).fill - stockState(b.fl).fill) || (a.i - b.i)
+        : (typeRank(a.fl.type) - typeRank(b.fl.type)) || (a.i - b.i));
     const priceMax = priceList.reduce((m, x) => Math.max(m, x.perKg), 0) || 1;
     const updFil = (id, patch) => this.setState(s => ({ filaments: s.filaments.map(x => x.id === id ? Object.assign({}, x, patch) : x) }));
     const numOrBlank = e => e.target.value === '' ? '' : Number(e.target.value);
@@ -3358,6 +3336,7 @@ class Component extends DCLogic {
       const tiersP = fl.tiers && fl.tiers.length ? fl.tiers : DEFAULT_TIERS;
       const off = this.filOff(fl), price = Number(fl.price) || 0, unit = resin ? '瓶' : '卷';
       const on = S.activeFilament === fl.id;
+      const st = stockState(fl);
       const name = [fl.brand, fl.color].filter(Boolean).join(' ') || '未命名';
       return {
         name, sku: fl.sku || '—', type: fl.type || '—', mode: resin ? '樹脂' : 'FDM',
@@ -3370,7 +3349,19 @@ class Component extends DCLogic {
         off: off > 0 ? '-' + off + '%' : '—',
         offStyle: "font-family:'IBM Plex Mono',monospace; text-align:right; color:" + (off > 0 ? '#0F6E62' : '#9AA0A6'),
         net: nt(price * (1 - off / 100)),
+        offLine: (off > 0 ? '-' + off + '% · ' : '') + '折後 ' + nt(price * (1 - off / 100)),
         perKg: nt(perKg) + (resin ? '/L' : '/kg'),
+        // 庫存
+        stockKg: fl.stockKg, safeKg: fl.safeKg, burnKg: fl.burnKg, stockUnit: 'kg',
+        onStock: e => updFil(fl.id, { stockKg: numOrBlank(e) }),
+        onSafe: e => updFil(fl.id, { safeKg: numOrBlank(e) }),
+        onBurn: e => updFil(fl.id, { burnKg: numOrBlank(e) }),
+        stock: st.stock.toFixed(1) + ' / ' + st.safe + ' kg',
+        stockBarStyle: 'height:100%; width:' + st.fill.toFixed(0) + '%; background:' + ['#0F6E62', '#C2471A', '#B4231F'][st.level],
+        parts: p.weight > 0 ? Math.floor((st.stock * 1000) / (p.weight * (1 + p.waste / 100))) + ' 件' : '—',
+        advice: ['充足', '兩週內進貨', '立即補貨'][st.level],
+        adviceStyle: "font-family:'IBM Plex Mono',monospace; text-align:right; font-size:11.5px; font-weight:600; color:" + ['#70767C', '#C2471A', '#B4231F'][st.level],
+        del: this.delFil(fl.id),
         barStyle: 'height:100%; background:' + (resin ? '#2B4E8F' : '#C2471A') + '; width:' + Math.round((perKg / priceMax) * 100) + '%',
         perG: perKg > 0 ? 'NT$' + (perKg / 1000).toFixed(2) + (resin ? '/ml' : '/g') : '—',
         ladder: tiersP.map(t => {
@@ -3382,22 +3373,27 @@ class Component extends DCLogic {
         applyStyle: 'text-align:center; border-radius:4px; padding:7px 6px; font-size:11.5px; cursor:pointer; white-space:nowrap; border:1px solid ' +
           (on ? '#0F6E62; background:#F1F7F4; color:#0F6E62' : '#15171A; background:#fff; color:#15171A'),
         text: [fl.type, name, fl.sku || '', (Number(fl.weight) || 0) + (resin ? 'ml' : 'g'), price, (Number(fl.buyQty) || 1) + unit,
-          off + '%', Math.round(price * (1 - off / 100)), Math.round(perKg) + (resin ? '/L' : '/kg')].join('\t'),
+          off + '%', Math.round(price * (1 - off / 100)), Math.round(perKg) + (resin ? '/L' : '/kg'),
+          st.stock, st.safe, Number(fl.burnKg) || 0, ['充足', '兩週內進貨', '立即補貨'][st.level]].join('\t'),
       };
     });
     const fdmPrices = priceAll.filter(x => !x.resin && x.perKg > 0), resinPrices = priceAll.filter(x => x.resin && x.perKg > 0);
     const avgOf = xs => xs.length ? xs.reduce((a, x) => a + x.perKg, 0) / xs.length : 0;
     const cheapest = fdmPrices.slice().sort((a, b) => a.perKg - b.perKg)[0];
-    const priceKpis = [
+    const matKpis = [
       { label: '材料品項', value: priceAll.length + ' 項', sub: (priceTypes.length - 1) + ' 種類型' },
-      { label: 'FDM 平均單價', value: fdmPrices.length ? nt(avgOf(fdmPrices)) + '/kg' : '—', sub: fdmPrices.length + ' 款線材(折後)' },
-      { label: '最低 FDM 單價', value: cheapest ? nt(cheapest.perKg) + '/kg' : '—', sub: cheapest ? [cheapest.fl.brand, cheapest.fl.type, cheapest.fl.color].filter(Boolean).join(' ') : '' },
-      { label: '樹脂平均單價', value: resinPrices.length ? nt(avgOf(resinPrices)) + '/L' : '—', sub: resinPrices.length + ' 款樹脂(折後)' },
+      { label: '庫存總值', value: nt(stockValue), sub: '存量 × 折後單價' },
+      { label: '線材總重', value: totalKg.toFixed(1) + ' kg', sub: '不含耗材類' },
+      { label: '低於安全庫存', value: lowCount + ' 項', sub: lowCount ? '建議立即補貨' : '庫存充足' },
+      { label: '本月採購建議', value: nt(restockCost), sub: '存量低於一半者補到安全量' },
+      { label: 'FDM 平均單價', value: fdmPrices.length ? nt(avgOf(fdmPrices)) + '/kg' : '—',
+        sub: (cheapest ? '最低 ' + nt(cheapest.perKg) + ' ' + [cheapest.fl.brand, cheapest.fl.type].filter(Boolean).join(' ') : '')
+          + (resinPrices.length ? ' · 樹脂 ' + nt(avgOf(resinPrices)) + '/L' : '') },
     ];
     const priceFilters = priceTypes.map(t => ({ label: t, go: () => this.setState({ priceFilter: t }), style: this.pill(priceFilter === t) }));
-    const priceSorts = [['type', '依類型'], ['asc', '單價低→高'], ['desc', '單價高→低']].map(d => ({ label: d[1], go: () => this.setState({ priceSort: d[0] }), style: this.pill(S.priceSort === d[0]) }));
+    const priceSorts = [['type', '依類型'], ['asc', '單價低→高'], ['desc', '單價高→低'], ['stock', '低庫存優先']].map(d => ({ label: d[1], go: () => this.setState({ priceSort: d[0] }), style: this.pill(S.priceSort === d[0]) }));
     const copyPriceList = () => {
-      const lines = ['類型\t材料\t料號\t規格\t整卷定價\t採購量\t折扣\t折後單價\t單價'].concat(priceRows.map(r => r.text));
+      const lines = ['類型\t材料\t料號\t規格\t整卷定價\t採購量\t折扣\t折後單價\t單價\t存量kg\t安全量kg\t30日用量kg\t建議'].concat(priceRows.map(r => r.text));
       try { navigator.clipboard.writeText(lines.join('\n')); } catch (e) {}
       this.flash('priceCopied');
     };
@@ -3444,7 +3440,7 @@ class Component extends DCLogic {
       isSim: S.screen === 'sim', isPower: S.screen === 'power', isMaterial: S.screen === 'material',
       isProducts: S.screen === 'products', isOrders: S.screen === 'orders', isMachines: S.screen === 'machines',
       isCustomers: S.screen === 'customers', isSettings: S.screen === 'settings', isCalc: S.screen === 'calc',
-      isPrices: S.screen === 'prices', priceKpis, priceFilters, priceSorts, priceRows, noPriceRows: priceRows.length === 0,
+      priceFilters, priceSorts, priceRows, noPriceRows: priceRows.length === 0,
       copyPriceList, copyPriceLabel: S.priceCopied ? '已複製 ✓' : '複製清單(可貼 Excel)',
       goSim: this.go('sim'), goOrders: this.go('orders'), goMaterial: this.go('material'),
       calcLinks: [
@@ -3482,10 +3478,10 @@ class Component extends DCLogic {
       onSens: (e) => this.setState({ sens: Number(e.target.value) }),
       ladder, ladderSaving, scenarios, plans, planCols: plans.length,
       power, powerFields, seasonTabs, tiers,
-      materials, matKpis, orders, orderTabs, machines, schedule, customers, rateRows, settingRows, budget,
+      matKpis, orders, orderTabs, machines, schedule, customers, rateRows, settingRows, budget,
       matDraft, addMaterial, orderDraft, addOrder, statusOptions, machineDraft, addMachine, customerDraft, addCustomer,
       isEdit: S.editMode, isView: !S.editMode,
-      matViewRows: S.editMode ? [] : materials,
+      matViewRows: S.editMode ? [] : priceRows,
       orderViewRows: S.editMode ? [] : orders,
       customerViewRows: S.editMode ? [] : customers,
       machineViewRows: S.editMode ? [] : machines,
