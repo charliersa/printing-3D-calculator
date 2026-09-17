@@ -960,7 +960,7 @@
           <div style="padding:16px 20px; border-bottom:1px solid #E7E7E2; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
             <div>
               <div style="font-size:13.5px; font-weight:700">材料價格庫存清單</div>
-              <div style="font-size:11.5px; color:#70767C; margin-top:3px">與成本計算機線材庫同步 · 改價即時影響報價與前台售價 · 低於安全庫存自動列入採購建議</div>
+              <div style="font-size:11.5px; color:#70767C; margin-top:3px">與成本計算機線材庫同步 · 改價即時影響報價與前台售價 · 存量不足 2 卷自動列入採購建議</div>
             </div>
             <div onClick="{{ copyPriceList }}" style="border:1px solid #15171A; padding:8px 14px; border-radius:4px; font-size:12.5px; cursor:pointer; background:#fff; white-space:nowrap" style-hover="background:#15171A; color:#fff">{{ copyPriceLabel }}</div>
           </div>
@@ -974,9 +974,9 @@
             </sc-for>
           </div>
           <div style="overflow-x:auto">
-            <div style="min-width:1140px">
-              <div style="display:grid; grid-template-columns:1.35fr 0.6fr 0.75fr 0.85fr 0.75fr 1fr 1fr 0.6fr 0.7fr 150px; gap:0 12px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#70767C; letter-spacing:0.06em; padding:11px 20px; background:#FAFAF8; border-bottom:1px solid #E7E7E2">
-                <span>材料 / 料號</span><span>類型</span><span>規格</span><span>整卷定價</span><span>採購量</span><span style="text-align:right">單價</span><span>存量</span><span style="text-align:right">可印件數</span><span style="text-align:right">建議</span><span></span>
+            <div style="min-width:980px">
+              <div style="display:grid; grid-template-columns:1.35fr 0.6fr 0.75fr 0.85fr 0.75fr 1fr 1fr 150px; gap:0 12px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#70767C; letter-spacing:0.06em; padding:11px 20px; background:#FAFAF8; border-bottom:1px solid #E7E7E2">
+                <span>材料 / 料號</span><span>類型</span><span>規格</span><span>整卷定價</span><span>採購量</span><span style="text-align:right">單價</span><span>存量</span><span></span>
               </div>
 
               <sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}">
@@ -995,7 +995,7 @@
 
               <sc-for list="{{ matViewRows }}" as="pr" hint-placeholder-count="6">
                 <div style="padding:12px 20px; border-bottom:1px solid #F4F4F0">
-                  <div style="display:grid; grid-template-columns:1.35fr 0.6fr 0.75fr 0.85fr 0.75fr 1fr 1fr 0.6fr 0.7fr 150px; gap:0 12px; align-items:center; font-size:12.5px">
+                  <div style="display:grid; grid-template-columns:1.35fr 0.6fr 0.75fr 0.85fr 0.75fr 1fr 1fr 150px; gap:0 12px; align-items:center; font-size:12.5px">
                     <div style="display:flex; align-items:center; gap:9px; min-width:0">
                       <span style="{{ pr.dot }}"></span>
                       <div style="min-width:0">
@@ -1029,8 +1029,6 @@
                       <div style="height:5px; background:#EFEFEC; border-radius:3px; overflow:hidden"><div style="{{ pr.stockBarStyle }}"></div></div>
                       <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#70767C; margin-top:5px">{{ pr.stock }}</div>
                     </div>
-                    <span style="font-family:'IBM Plex Mono',monospace; text-align:right">{{ pr.parts }}</span>
-                    <span style="{{ pr.adviceStyle }}">{{ pr.advice }}</span>
                     <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center">
                       <div onClick="{{ pr.apply }}" style="{{ pr.applyStyle }}">{{ pr.applyLabel }}</div>
                       <div onClick="{{ pr.del }}" title="刪除此材料" style="flex:0 0 26px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; border:1px solid #E7E7E2; border-radius:3px; color:#9AA0A6; font-size:13px; cursor:pointer" style-hover="border-color:#B4231F; color:#B4231F">✕</div>
@@ -3286,9 +3284,6 @@ class Component extends DCLogic {
         onStock: e => updFil(fl.id, { stockKg: numOrBlank(e) }),
         stock: st.stock.toFixed(1) + ' kg · ' + st.rolls.toFixed(1) + ' ' + unit,
         stockBarStyle: 'height:100%; width:' + st.fill.toFixed(0) + '%; background:' + ['#0F6E62', '#C2471A', '#B4231F'][st.level],
-        parts: p.weight > 0 ? Math.floor((st.stock * 1000) / (p.weight * (1 + p.waste / 100))) + ' 件' : '—',
-        advice: ['充足', '兩週內進貨', '立即補貨'][st.level],
-        adviceStyle: "font-family:'IBM Plex Mono',monospace; text-align:right; font-size:11.5px; font-weight:600; color:" + ['#70767C', '#C2471A', '#B4231F'][st.level],
         del: this.delFil(fl.id),
         barStyle: 'height:100%; background:' + (resin ? '#2B4E8F' : '#C2471A') + '; width:' + Math.round((perKg / priceMax) * 100) + '%',
         perG: perKg > 0 ? 'NT$' + (perKg / 1000).toFixed(2) + (resin ? '/ml' : '/g') : '—',
@@ -3302,7 +3297,7 @@ class Component extends DCLogic {
           (on ? '#0F6E62; background:#F1F7F4; color:#0F6E62' : '#15171A; background:#fff; color:#15171A'),
         text: [fl.type, name, fl.sku || '', (Number(fl.weight) || 0) + (resin ? 'ml' : 'g'), price, (Number(fl.buyQty) || 1) + unit,
           off + '%', Math.round(price * (1 - off / 100)), Math.round(perKg) + (resin ? '/L' : '/kg'),
-          st.stock, ['充足', '兩週內進貨', '立即補貨'][st.level]].join('\t'),
+          st.stock].join('\t'),
       };
     });
     const fdmPrices = priceAll.filter(x => !x.resin && x.perKg > 0), resinPrices = priceAll.filter(x => x.resin && x.perKg > 0);
@@ -3324,7 +3319,7 @@ class Component extends DCLogic {
     const priceFilters = priceTypes.map(t => ({ label: t, go: () => this.setState({ priceFilter: t }), style: this.pill(priceFilter === t) }));
     const priceSorts = [['type', '依類型'], ['asc', '單價低→高'], ['desc', '單價高→低'], ['stock', '低庫存優先']].map(d => ({ label: d[1], go: () => this.setState({ priceSort: d[0] }), style: this.pill(S.priceSort === d[0]) }));
     const copyPriceList = () => {
-      const lines = ['類型\t材料\t料號\t規格\t整卷定價\t採購量\t折扣\t折後單價\t單價\t存量kg\t建議'].concat(priceRows.map(r => r.text));
+      const lines = ['類型\t材料\t料號\t規格\t整卷定價\t採購量\t折扣\t折後單價\t單價\t存量kg'].concat(priceRows.map(r => r.text));
       try { navigator.clipboard.writeText(lines.join('\n')); } catch (e) {}
       this.flash('priceCopied');
     };
