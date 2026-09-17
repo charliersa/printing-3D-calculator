@@ -412,7 +412,7 @@
               <div style="font-size:13.5px; font-weight:700; margin-bottom:3px">敏感度:改一個參數看毛利</div>
               <div style="font-size:11.5px; color:#70767C; margin-bottom:14px">選一個變數,拖動幅度,右側毛利即時反應。</div>
               <div style="display:flex; gap:7px; flex-wrap:wrap; margin-bottom:16px">
-                <sc-for list="{{ sensKeys }}" as="s" hint-placeholder-count="5">
+                <sc-for list="{{ sensKeys }}" as="s" hint-placeholder-count="4">
                   <div onClick="{{ s.go }}" style="{{ s.style }}">{{ s.label }}</div>
                 </sc-for>
               </div>
@@ -446,7 +446,7 @@
                   </sc-for>
                 </div>
               </div>
-              <div style="font-size:11.5px; color:#70767C; margin-top:12px; line-height:1.7">開機準備工時攤提於整批,故單件成本隨量遞減;100 件較單件節省 {{ ladderSaving }}。</div>
+              <div style="font-size:11.5px; color:#70767C; margin-top:12px; line-height:1.7">電價固定、無整批攤提項目,單件成本不隨數量變動;批次總毛利 = 單件毛利 × 數量。</div>
             </div>
 
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap:14px">
@@ -1770,17 +1770,15 @@ class Component extends DCLogic {
     const kwhUnit = (p.watts * p.hours) / 1000;
     const elec = kwhUnit * ELEC_RATE;
     const depr = (p.machinePrice / Math.max(1, p.machineLife) + Number(p.maint)) * p.hours;
-    const labor = (p.laborMin / 60) * p.laborRate + ((p.setupMin / 60) * p.laborRate) / q;
     const post = Number(p.post);
-    const pack = Number(p.packaging) + Number(p.shipping) / q;
     const core = mat + elec + depr + post;
     const failLoss = core * (p.failRate / 100) / Math.max(0.01, 1 - p.failRate / 100);
-    const cost = core + labor + pack + failLoss;
+    const cost = core + failLoss;
     const denom = Math.max(0.05, 1 - p.platformFee / 100 - p.margin / 100);
     const price = cost / denom;
     const fee = price * p.platformFee / 100;
     const profit = price - cost - fee;
-    return { mat, elec, depr, labor, post, pack, failLoss, cost, price, fee, profit, margin: price > 0 ? profit / price : 0, kwhUnit, rate: ELEC_RATE, qty: q };
+    return { mat, elec, depr, post, failLoss, cost, price, fee, profit, margin: price > 0 ? profit / price : 0, kwhUnit, rate: ELEC_RATE, qty: q };
   }
 
   go(screen) { return () => this.setState({ screen, navOpen: false }); }
@@ -2928,7 +2926,7 @@ class Component extends DCLogic {
     const item = {
       name: it.name, sku: it.sku, badge: it.badge === '現貨' ? 'IN STOCK · 3 日內出貨' : 'PRE-ORDER · 排隊列印', tint: it.tint,
       price: it.price, desc: '以 ' + it.mat + ' 線材列印,層高 0.2mm、15% 填充。單件淨重 ' + it.w + ' 公克,列印時間 ' + it.h + ' 小時,含去支撐與表面修整。',
-      matCost: nt(it.calc.mat, 1), elecCost: nt(it.calc.elec, 1), opCost: nt(it.calc.depr + it.calc.labor, 1), margin: pc(it.calc.margin),
+      matCost: nt(it.calc.mat, 1), elecCost: nt(it.calc.elec, 1), opCost: nt(it.calc.depr, 1), margin: pc(it.calc.margin),
       specs: [
         { k: '材料', v: it.mat },
         { k: '淨重', v: it.w + ' g' },
@@ -2963,9 +2961,7 @@ class Component extends DCLogic {
         { k: '材料(含 ' + p.waste + '% 損耗)', v: nt(qc.mat, 1) },
         { k: '電費 ' + qc.kwhUnit.toFixed(2) + ' kWh × ' + qc.rate.toFixed(2), v: nt(qc.elec, 1) },
         { k: '機器折舊與維護', v: nt(qc.depr, 1) },
-        { k: '人工與開機攤提', v: nt(qc.labor, 1) },
         { k: '後處理耗材', v: nt(qc.post, 1) },
-        { k: '包材與運費攤提', v: nt(qc.pack, 1) },
         { k: '失敗重印準備(' + p.failRate + '%)', v: nt(qc.failLoss, 1) },
         { k: '平台手續費 ' + p.platformFee + '%', v: nt(qc.fee, 1) },
       ],
@@ -2974,7 +2970,7 @@ class Component extends DCLogic {
     // sim breakdown
     const bd = [
       ['材料', base.mat, '#F0A07A'], ['電費', base.elec, '#6FCFAE'], ['機器折舊/維護', base.depr, '#9AB7E8'],
-      ['人工與開機', base.labor, '#E8C46F'], ['後處理耗材', base.post, '#C9A3E8'], ['包材運費', base.pack, '#8FD0D6'],
+      ['後處理耗材', base.post, '#C9A3E8'],
       ['失敗重印', base.failLoss, '#E08585'],
     ];
     const breakdown = bd.map(b => ({ label: b[0], amount: nt(b[1], 1), pct: (base.cost > 0 ? (b[1] / base.cost) * 100 : 0).toFixed(1) + '%', color: b[2] }));
@@ -2985,7 +2981,6 @@ class Component extends DCLogic {
       weight: { label: '單件重量', key: 'weight', note: '減重靠設計:降填充、改壁厚、挖空非受力區,每降 10% 重量約提升 1.5 個百分點毛利。' },
       hours: { label: '列印時數', key: 'hours', note: '時數同時影響電費、折舊與排程產能;加大層高最有效但影響外觀。' },
       failRate: { label: '失敗率', key: 'failRate', note: '失敗率是隱形成本。從 12% 降到 5% 相當於線材降價 8%。' },
-      laborRate: { label: '人工時薪', key: 'laborRate', note: '人工在小批量時占比最高;把後處理標準化或批次處理最能壓低。' },
     };
     const sd = sensDefs[S.sensKey];
     const factor = 1 + S.sens / 100;
@@ -3158,11 +3153,6 @@ class Component extends DCLogic {
     const addCustomer = this.addRow('customer', 'customerRows', [3, 4, 5], ['', '', '', '', '', '', '']);
 
     const settingRows = [
-      { label: '預設目標毛利率', unit: '%', step: 1, value: p.margin, onChange: this.setP('margin') },
-      { label: '預設損耗率', unit: '%', step: 1, value: p.waste, onChange: this.setP('waste') },
-      { label: '預設失敗重印率', unit: '%', step: 1, value: p.failRate, onChange: this.setP('failRate') },
-      { label: '平台手續費', unit: '%', step: 0.5, value: p.platformFee, onChange: this.setP('platformFee') },
-      { label: '人工時薪', unit: '元', step: 10, value: p.laborRate, onChange: this.setP('laborRate') },
       { label: '每小時維護費', unit: '元', step: 0.1, value: p.maint, onChange: this.setP('maint') },
     ];
     const budgetDefs = [
@@ -3189,10 +3179,10 @@ class Component extends DCLogic {
 
     // product form
     const f = S.form;
-    const nc = this.calc({ weight: Number(f.weight) || p.weight, hours: Number(f.hours) || p.hours, laborMin: Number(f.labor) || p.laborMin }, 1);
+    const nc = this.calc({ weight: Number(f.weight) || p.weight, hours: Number(f.hours) || p.hours }, 1);
     const setF = (k) => (e) => { const v = e.target.value; this.setState(s => ({ form: Object.assign({}, s.form, { [k]: v }), fieldSrc: Object.assign({}, s.fieldSrc, { [k]: '手動' }) })); };
     const srcInk = (v) => v === '語音' ? '#C2471A' : v === '照片' ? '#2B4E8F' : v === '自動' ? '#0F6E62' : '#9AA0A6';
-    const formDefs = [['name', '商品名稱', '例:模組化桌面收納格'], ['sku', '商品編號', 'FC-1234'], ['material', '材料', 'PLA / PETG / ABS'], ['weight', '單件淨重 (g)', '85'], ['hours', '列印時數 (h)', '4.5'], ['labor', '人工工時 (min)', '18']];
+    const formDefs = [['name', '商品名稱', '例:模組化桌面收納格'], ['sku', '商品編號', 'FC-1234'], ['material', '材料', 'PLA / PETG / ABS'], ['weight', '單件淨重 (g)', '85'], ['hours', '列印時數 (h)', '4.5']];
     const formFields = formDefs.map(d => ({ label: d[1], ph: d[2], value: f[d[0]], onChange: setF(d[0]), src: S.fieldSrc[d[0]] || '', srcInk: srcInk(S.fieldSrc[d[0]]) }));
 
     const adminProducts = cat.map((c, ci) => ({
