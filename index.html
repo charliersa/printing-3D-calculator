@@ -1353,7 +1353,7 @@
             <div style="font-size:13.5px; font-weight:700">Google Sheets 雲端資料庫</div>
             <span style="{{ cloud.statusStyle }}">{{ cloud.statusLabel }}</span>
           </div>
-          <div style="font-size:11.5px; color:#70767C; margin:5px 0 14px; line-height:1.7">線材、類型、廠商、機台、固定成本、訂單、客戶、商品、電價級距與計算機參數會存到 Google 試算表(每類資料一張工作表)。開啟頁面時自動從試算表載入,修改後約 1.5 秒自動上傳有變動的資料。</div>
+          <div style="font-size:11.5px; color:#70767C; margin:5px 0 14px; line-height:1.7">線材、類型、廠商、機台、固定成本、訂單、客戶、商品、電價級距與計算機參數會存到 Google 試算表(每類資料一張工作表)。開啟頁面時自動從試算表載入;在手機或電腦新增、修改、刪除後約 1.5 秒同步到試算表,其他裝置每 30 秒(或切回視窗時)自動更新。</div>
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap:10px 14px">
             <div>
               <div style="font-size:11px; color:#70767C; margin-bottom:5px">Apps Script 網頁應用程式網址</div>
@@ -1566,6 +1566,12 @@ const JOB_MAP = {
 
 // Google Sheets 雲端資料庫:資料集 → 工作表名稱(與 google-apps-script/Code.gs 一致)
 const CLOUD_CFG_KEY = 'filacost_cloud_v1';
+const CLOUD_API_VERSION = 2;
+// 辨識同一列的鍵值(與 Code.gs 的 key 一致),用來計算新增 / 修改 / 刪除
+const CLOUD_KEY = {
+  filaments: r => r.id, types: r => r.id, brands: r => r.id, machines: r => r.id, calcFixed: r => r.id,
+  catalog: r => r.id || r.name, orderRows: r => r[0], customerRows: r => r[0], rates: r => r.range,
+};
 const CLOUD_LABEL = {
   filaments: '線材', types: '線材類型', brands: '廠商', machines: '機台', calcFixed: '固定成本',
   orderRows: '訂單', customerRows: '客戶', catalog: '商品', rates: '電價級距', settings: '設定',
@@ -1608,14 +1614,14 @@ class Component extends DCLogic {
     ],
     extraProducts: [],
     catalog: [
-      { name: '模組化桌面收納格', mat: 'PLA', w: 85, h: 4.5, badge: '現貨', tint: '#E6E9E4', cat: '收納' },
-      { name: '相機快拆板 Arca 規格', mat: 'PETG', w: 62, h: 3.2, badge: '現貨', tint: '#E4E6EC', cat: '攝影' },
-      { name: '齒輪減速組 1:5', mat: 'PETG', w: 148, h: 9.4, badge: '預購', tint: '#EDE7DE', cat: '機構' },
-      { name: '手沖咖啡濾杯座', mat: 'PLA', w: 112, h: 6.1, badge: '現貨', tint: '#EFE6E0', cat: '生活' },
-      { name: 'Bambu 線材乾燥架', mat: 'ABS', w: 205, h: 12.8, badge: '募資中', tint: '#E7E4E9', cat: '耗材' },
-      { name: '教學用骨架模型組', mat: 'PLA', w: 320, h: 18.5, badge: '預購', tint: '#E4EAE7', cat: '教育' },
-      { name: '線材餘料量測夾', mat: 'PLA', w: 34, h: 1.6, badge: '現貨', tint: '#EAEAE4', cat: '耗材' },
-      { name: '無人機腳架(強化)', mat: 'ABS', w: 96, h: 5.4, badge: '預購', tint: '#E9E5E1', cat: '機構' },
+      { id: 'p1', name: '模組化桌面收納格', mat: 'PLA', w: 85, h: 4.5, badge: '現貨', tint: '#E6E9E4', cat: '收納' },
+      { id: 'p2', name: '相機快拆板 Arca 規格', mat: 'PETG', w: 62, h: 3.2, badge: '現貨', tint: '#E4E6EC', cat: '攝影' },
+      { id: 'p3', name: '齒輪減速組 1:5', mat: 'PETG', w: 148, h: 9.4, badge: '預購', tint: '#EDE7DE', cat: '機構' },
+      { id: 'p4', name: '手沖咖啡濾杯座', mat: 'PLA', w: 112, h: 6.1, badge: '現貨', tint: '#EFE6E0', cat: '生活' },
+      { id: 'p5', name: 'Bambu 線材乾燥架', mat: 'ABS', w: 205, h: 12.8, badge: '募資中', tint: '#E7E4E9', cat: '耗材' },
+      { id: 'p6', name: '教學用骨架模型組', mat: 'PLA', w: 320, h: 18.5, badge: '預購', tint: '#E4EAE7', cat: '教育' },
+      { id: 'p7', name: '線材餘料量測夾', mat: 'PLA', w: 34, h: 1.6, badge: '現貨', tint: '#EAEAE4', cat: '耗材' },
+      { id: 'p8', name: '無人機腳架(強化)', mat: 'ABS', w: 96, h: 5.4, badge: '預購', tint: '#E9E5E1', cat: '機構' },
     ],
     filaments: FILAMENTS,
     types: TYPES,
@@ -1724,8 +1730,13 @@ class Component extends DCLogic {
     this._onInstall = () => this.setState({ canInstall: !!window.__fcInstallPrompt });
     window.addEventListener('fc-install-ready', this._onInstall);
     this._onInstall();
-    this._onOnline = () => { if (Object.keys(this._cloudDirty).length) this.cloudPush(); };
+    this._onOnline = () => { if (Object.keys(this._cloudDirty).length) this.cloudPush(); else this.cloudPoll(); };
     window.addEventListener('online', this._onOnline);
+    // 其他裝置的變更(含刪除):每 30 秒、以及切回視窗時自動更新
+    this._onFocus = () => this.cloudPoll();
+    window.addEventListener('focus', this._onFocus);
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', this._onFocus);
+    if (typeof window.setInterval === 'function') this._pollTimer = window.setInterval(() => this.cloudPoll(), 30000);
   }
 
   installApp = () => {
@@ -1848,7 +1859,10 @@ class Component extends DCLogic {
     this._mvTimer = setTimeout(() => { if (!el.loaded) bad(); else ok(); }, 8000);
   }
   componentWillUnmount() { clearTimeout(this._mvTimer); window.removeEventListener('resize', this._onResize); if (this._unlisten) this._unlisten(); clearTimeout(this._cloudTimer);
-    window.removeEventListener('fc-install-ready', this._onInstall); window.removeEventListener('online', this._onOnline); }
+    window.removeEventListener('fc-install-ready', this._onInstall); window.removeEventListener('online', this._onOnline);
+    window.removeEventListener('focus', this._onFocus);
+    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', this._onFocus);
+    if (this._pollTimer && typeof window.clearInterval === 'function') window.clearInterval(this._pollTimer); }
 
   isAdmin() { return ['dash','sim','calc','power','material','prices','products','orders','machines','customers','settings'].indexOf(this.state.screen) >= 0; }
 
@@ -2000,8 +2014,12 @@ class Component extends DCLogic {
     return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : fb;
   }
   // ---------- Google Sheets 雲端資料庫(透過 Apps Script 網頁應用程式) ----------
-  _cloudDirty = {};
-  _cloudIn = {};
+  _cloudDirty = {};   // 等待上傳的資料表
+  _cloudIn = {};      // 從雲端載入的內容(不必再傳回去)
+  _cloudBase = {};    // 各資料表「上次與雲端同步時」的內容,用來算出新增 / 修改 / 刪除
+  _cloudSeen = {};    // 上次看到的雲端設定值(避免背景更新蓋掉尚未存檔的輸入)
+  _cloudPollAt = 0;
+  _cloudPushSeq = 0;
 
   setCloudCfg(patch) {
     const S = this.state;
@@ -2030,6 +2048,9 @@ class Component extends DCLogic {
     let data;
     try { data = JSON.parse(text); } catch (e) { throw new Error('回應不是 JSON,請確認部署的存取權為「所有人」'); }
     if (!data || !data.ok) throw new Error((data && data.error) || '雲端回傳錯誤');
+    if (!(Number(data.version) >= CLOUD_API_VERSION)) {
+      throw new Error('Google Apps Script 需要更新:請貼上最新的 Code.gs,再到「部署 → 管理部署作業 → 編輯 → 新版本」重新部署');
+    }
     return data;
   }
 
@@ -2040,22 +2061,61 @@ class Component extends DCLogic {
     this._cloudTimer = setTimeout(() => this.cloudPush(), 1500);
   }
 
-  async cloudPush(doneMsg) {
+  // 與「上次同步內容」比對,只送出差異:新增/修改的列(upsert)與被刪除的鍵值(remove)
+  cloudOps(k, cur) {
+    const keyOf = r => String(CLOUD_KEY[k](r) ?? '');
+    const order = cur.map(keyOf);
+    const base = this._cloudBase[k];
+    if (!Array.isArray(base)) return { upsert: cur, remove: [], order };
+    const before = new Map(base.map(r => [keyOf(r), JSON.stringify(r)]));
+    const now = new Set(order);
+    return {
+      upsert: cur.filter(r => before.get(keyOf(r)) !== JSON.stringify(r)),
+      remove: Array.from(before.keys()).filter(x => x !== '' && !now.has(x)),
+      order,
+    };
+  }
+
+  async cloudPush(doneMsg, replaceAll) {
     if (this._cloudBusy) { this._cloudAgain = true; return; }
     const keys = Object.keys(this._cloudDirty);
     if (!keys.length) return;
     this._cloudDirty = {};
     this._cloudBusy = true;
-    const S = this.state, collections = {};
+    const S = this.state, ops = {}, sent = {};
     let settings = null;
     keys.forEach(k => {
-      if (k === 'settings') settings = { job: (LINK.read(LINK.K.job, null) || {}).job || this.calcJob(), calcDefaults: S.calcDefaults, calcNote: S.calcNote };
-      else collections[k] = S[k];
+      if (k === 'settings') {
+        settings = { job: (LINK.read(LINK.K.job, null) || {}).job || this.calcJob(), calcDefaults: S.calcDefaults, calcNote: S.calcNote };
+        return;
+      }
+      sent[k] = S[k];
+      ops[k] = replaceAll ? { replace: true, rows: S[k] } : this.cloudOps(k, S[k]);
     });
-    this.setState({ cloudStatus: 'syncing', cloudMsg: '上傳中:' + keys.map(k => CLOUD_LABEL[k] || k).join('、') });
+    const label = keys.map(k => CLOUD_LABEL[k] || k).join('、');
+    this.setState({ cloudStatus: 'syncing', cloudMsg: '上傳中:' + label });
     try {
-      await this.cloudRequest('push', { collections, settings });
-      this.setState({ cloudStatus: 'ok', cloudAt: Date.now(), cloudMsg: doneMsg || '已上傳:' + keys.map(k => CLOUD_LABEL[k] || k).join('、') });
+      const res = await this.cloudRequest('push', { ops, settings });
+      this._cloudPushSeq++;
+      const results = res.results || {}, patch = {};
+      Object.keys(sent).forEach(k => {
+        const merged = results[k];
+        if (!Array.isArray(merged)) { this._cloudBase[k] = sent[k]; return; }
+        if (this.state[k] === sent[k]) {
+          // 上傳期間沒有再修改:採用雲端合併後的結果(包含其他裝置新增的列)
+          this._cloudBase[k] = merged;
+          if (JSON.stringify(merged) !== JSON.stringify(sent[k])) { patch[k] = merged; this._cloudIn[k] = merged; }
+        } else {
+          this._cloudBase[k] = sent[k];
+        }
+      });
+      if (settings) {
+        this._cloudSeen.job = JSON.stringify(settings.job);
+        this._cloudSeen.calcDefaults = JSON.stringify(settings.calcDefaults);
+        this._cloudSeen.calcNote = JSON.stringify(settings.calcNote);
+      }
+      if (Object.keys(patch).length) this.setState(patch);
+      this.setState({ cloudStatus: 'ok', cloudAt: Date.now(), cloudMsg: doneMsg || '已同步:' + label });
     } catch (e) {
       keys.forEach(k => { this._cloudDirty[k] = true; });
       this.setState({ cloudStatus: 'error', cloudMsg: '上傳失敗:' + e.message + '(變更已保留,下次修改時重試)' });
@@ -2069,35 +2129,92 @@ class Component extends DCLogic {
     Object.keys(PERSIST).forEach(k => { this._cloudDirty[k] = true; });
     this._cloudDirty.settings = true;
     clearTimeout(this._cloudTimer);
-    await this.cloudPush(typeof msg === 'string' ? msg : '已上傳全部資料到 Google Sheets');
+    // 「上傳全部」= 以本機內容覆蓋整份試算表
+    await this.cloudPush(typeof msg === 'string' ? msg : '已用本機資料覆蓋 Google Sheets', true);
   };
 
+  // 套用雲端資料。quiet = 背景自動更新:略過還有未上傳變更的資料表,設定只在雲端真的改變時才套用
+  applyCloudData(data, quiet) {
+    const cols = data.collections || {}, st = data.settings || {}, patch = {}, got = [];
+    Object.keys(PERSIST).forEach(k => {
+      const rows = cols[k];
+      if (!Array.isArray(rows)) return;
+      // 試算表還沒初始化時空表代表「尚未建立」;電價級距固定 6 列,空表一律保留本機
+      if (!rows.length && (!data.initialized || k === 'rates')) return;
+      if (quiet && this._cloudDirty[k]) return;
+      this._cloudBase[k] = rows;
+      if (JSON.stringify(rows) === JSON.stringify(this.state[k])) return;
+      patch[k] = rows;
+      this._cloudIn[k] = rows;
+      got.push(CLOUD_LABEL[k] || k);
+    });
+
+    const settingsBusy = quiet && this._cloudDirty.settings;
+    const changed = (name, val) => {
+      const s = JSON.stringify(val);
+      const isNew = this._cloudSeen[name] !== s;
+      this._cloudSeen[name] = s;
+      return !quiet || isNew;
+    };
+    if (!settingsBusy && st.calcDefaults && typeof st.calcDefaults === 'object' && changed('calcDefaults', st.calcDefaults)) {
+      const d = Object.assign({}, DEFAULTS, st.calcDefaults);
+      if (JSON.stringify(d) !== JSON.stringify(this.state.calcDefaults)) { patch.calcDefaults = d; LINK.write('printcost_defaults_v1', d); }
+    }
+    if (!settingsBusy && typeof st.calcNote === 'string' && changed('calcNote', st.calcNote) && st.calcNote !== this.state.calcNote) {
+      patch.calcNote = st.calcNote;
+      LINK.write('printcost_note_v1', st.calcNote);
+    }
+    if (Object.keys(patch).length) this.setState(patch);
+
+    if (!settingsBusy && st.job && typeof st.job === 'object' && changed('job', st.job)) {
+      const cur = this.calcJob();
+      if (Object.keys(st.job).some(k => k in cur && !LINK.same(cur[k], st.job[k]))) {
+        LINK.write(LINK.K.job, { app: 'cloud', ts: Date.now(), job: st.job });
+        this.applyJob({ job: st.job });
+        got.push('計算機參數');
+      }
+    }
+    return got;
+  }
+
   cloudPull = async () => {
+    this._cloudPollAt = Date.now();
     this.setState({ cloudStatus: 'syncing', cloudMsg: '從 Google Sheets 載入中…' });
     try {
       const data = await this.cloudRequest('pull');
-      const cols = data.collections || {}, st = data.settings || {}, patch = {}, got = [];
-      Object.keys(PERSIST).forEach(k => {
-        // 空的工作表視為尚未建立,保留本機資料
-        if (Array.isArray(cols[k]) && cols[k].length) { patch[k] = cols[k]; this._cloudIn[k] = cols[k]; got.push(CLOUD_LABEL[k] || k); }
-      });
-      if (st.calcDefaults && typeof st.calcDefaults === 'object') {
-        patch.calcDefaults = Object.assign({}, DEFAULTS, st.calcDefaults);
-        LINK.write('printcost_defaults_v1', patch.calcDefaults);
-      }
-      if (typeof st.calcNote === 'string') { patch.calcNote = st.calcNote; LINK.write('printcost_note_v1', st.calcNote); }
-      this.setState(patch);
-      if (st.job && typeof st.job === 'object') {
-        LINK.write(LINK.K.job, { app: 'cloud', ts: Date.now(), job: st.job });
-        this.applyJob({ job: st.job });
-      }
-      if (!got.length && !st.job) {
+      const cols = data.collections || {};
+      const hasData = data.initialized || Object.keys(cols).some(k => (cols[k] || []).length) || (data.settings || {}).job;
+      if (!hasData) {
         await this.cloudPushAll('試算表是空的,已上傳目前資料作為初始資料');
         return;
       }
-      this.setState({ cloudStatus: 'ok', cloudAt: Date.now(), cloudMsg: '已從雲端載入:' + (got.length ? got.join('、') : '計算機參數') });
+      const got = this.applyCloudData(data, false);
+      this.setState({ cloudStatus: 'ok', cloudAt: Date.now(), cloudMsg: got.length ? '已從雲端載入:' + got.join('、') : '已是最新資料' });
     } catch (e) {
       this.setState({ cloudStatus: 'error', cloudMsg: '載入失敗:' + e.message });
+    }
+  };
+
+  // 背景自動更新:讓其他裝置的新增、修改、刪除出現在這台裝置
+  cloudPoll = async () => {
+    const S = this.state;
+    if (!S.cloudAuto || !S.cloudUrl || !S.cloudToken || this._cloudBusy || this._cloudPolling) return;
+    if (typeof document !== 'undefined' && document.hidden) return;
+    if (Date.now() - this._cloudPollAt < 5000) return;
+    this._cloudPolling = true;
+    this._cloudPollAt = Date.now();
+    const seq = this._cloudPushSeq;
+    try {
+      const data = await this.cloudRequest('pull');
+      // 等待期間有上傳,這份資料可能比較舊,丟棄
+      if (this._cloudBusy || seq !== this._cloudPushSeq) return;
+      const got = this.applyCloudData(data, true);
+      if (got.length) this.setState({ cloudStatus: 'ok', cloudAt: Date.now(), cloudMsg: '已從其他裝置更新:' + got.join('、') });
+      else if (this.state.cloudStatus === 'error' && !Object.keys(this._cloudDirty).length) this.setState({ cloudStatus: 'ok', cloudAt: Date.now(), cloudMsg: '連線已恢復' });
+    } catch (e) {
+      if (this.state.cloudStatus !== 'error') this.setState({ cloudStatus: 'error', cloudMsg: '自動更新失敗:' + e.message });
+    } finally {
+      this._cloudPolling = false;
     }
   };
 
@@ -2754,7 +2871,7 @@ class Component extends DCLogic {
   addProduct = () => {
     const f = this.state.form; if (!f.name) return;
     this.setState(s => ({
-      catalog: [{ name: f.name, mat: f.material || 'PLA', w: Number(f.weight) || s.p.weight, h: Number(f.hours) || s.p.hours, badge: '現貨', tint: '#E8E4DC', cat: '自訂' }].concat(s.catalog),
+      catalog: [{ id: 'p' + Date.now(), name: f.name, mat: f.material || 'PLA', w: Number(f.weight) || s.p.weight, h: Number(f.hours) || s.p.hours, badge: '現貨', tint: '#E8E4DC', cat: '自訂' }].concat(s.catalog),
       form: { name: '', sku: 'FC-', material: 'PLA', weight: '', hours: '', labor: '' },
       fieldSrc: {}, ocrState: false, voiceTranscript: '',
     }));
@@ -2842,7 +2959,11 @@ class Component extends DCLogic {
     const shopItems = cat.filter(c => S.shopFilter === '全部' || c.cat === S.shopFilter)
       .map(c => Object.assign({}, c, { open: () => this.setState({ screen: 'item', itemIdx: c.idx }) }));
 
-    const it = cat[Math.min(S.itemIdx, cat.length - 1)];
+    // 商品全部刪除時給空白資料,避免商品詳情頁出錯
+    const it = cat[Math.min(S.itemIdx, cat.length - 1)] || {
+      name: '尚無商品', sku: '—', badge: '預購', tint: '#E8E4DC', price: nt(0), mat: '—', w: 0, h: 0,
+      calc: this.calc({ weight: 0, hours: 0 }, 1),
+    };
     const item = {
       name: it.name, sku: it.sku, badge: it.badge === '現貨' ? 'IN STOCK · 3 日內出貨' : 'PRE-ORDER · 排隊列印', tint: it.tint,
       price: it.price, desc: '以 ' + it.mat + ' 線材列印,層高 0.2mm、15% 填充。單件淨重 ' + it.w + ' 公克,列印時間 ' + it.h + ' 小時,含去支撐與表面修整。',
